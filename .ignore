@@ -1,0 +1,5 @@
+# graft 的卡片由 .gitignore 排除，但仍需支持搜索：ripgrep 优先读取
+# .ignore，因此此处仅允许搜索该目录。
+!graft/
+graft/.cache/
+graft/.graph/

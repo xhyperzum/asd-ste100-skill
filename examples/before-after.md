@@ -1,92 +1,54 @@
-# Before / After Examples
+# 改写示例
 
-## Part 1 — Official STE Examples
+正式英文输入和输出统一存放在 [fixtures.json](fixtures.json)，本页通过编号解释改写。英文语料用于演示和检查英语结构；中文说明不参与英文词数统计。这些语料是本项目的示例，不是官方标准的引文，也不能作为词典批准措辞的证明。
 
-These illustrate real ASD-STE100 rules, drawn from public secondary sources (see `references/writing-rules.md`). They are paraphrased illustrations of the rule, not quotes from the standard itself.
+## 计数口径
 
-| Rule | Before | After | Why |
-|---|---|---|---|
-| One meaning per word | "Verify the system." / "Check the connections." / "Confirm receipt." | "Make sure the system is correct." (one approved term used consistently) | Three near-synonyms force the reader to guess whether they mean the same action. |
-| One part of speech per word | "Oil the valve." | "Apply oil to the valve." | If "oil" is approved only as a noun, using it as a verb breaks the one-word-one-role guarantee. |
-| Precise verb meaning | "Follow the safety instructions." | "Obey the safety instructions." | "Follow" can mean "come after" or "obey" — STE picks the unambiguous one. |
-| Simple tense only | "We have received the technical reports from HQ." | "We received the technical reports from HQ." | Present perfect adds a second parse ("received, and still relevant now?") that simple past avoids. |
-| Verb, not noun | "Perform an inspection of the filter." | "Inspect the filter." | The noun form hides the action and adds a filler verb that carries no meaning. |
-| No phrasal verbs | "Take off the access panel." | "Remove the access panel." | "Take off" also means "depart" and "deduct" — the two words together do not predict the meaning. |
+以下数字根据语料中的英文按空白分隔统计，标点不单独计词。所有语料均不含 Markdown 代码或列表标记，因此与检查器的正文词数口径一致。一般 Markdown 文档的排除规则见 [检查器说明](../references/linter.md)。JSON 中的 `expected_after_sentence_words` 按顺序记录改写后的每句词数。
 
-## Part 2 — Applied to Agent Output
+| 编号 | 文本类型 | 原文词数 | 改写词数 | 改写各句词数 |
+|---|---|---:|---:|---|
+| A | `description` | 44 | 33 | 11、22 |
+| B | `description` | 28 | 29 | 9、12、8 |
+| C | `instruction` | 36 | 26 | 18、8 |
+| D | `description` | 34 | 34 | 19、15 |
 
-These are original examples built for this skill's actual use case: rewriting AI agent output so another agent, a translation layer, or a non-native reader can parse it without ambiguity. They are illustrations, not quotes from any real system.
+词数减少不是改写目标。B 为保留三处不确定关系而增加了总词数，D 保留主张强度且总词数相同；两者均通过拆句降低单句长度。
 
-Word counts below are whitespace-separated tokens (`text.split()`), punctuation not counted separately. A different tokenizer will produce a different number.
+## 示例 A：工具说明
 
-### Example A — Tool description
+参阅语料 `A`。原文承诺的是 `will attempt`，不是同步一定成功；冲突处理使用 `may`，也不是自动解决的保证。改写将同步与冲突处理拆开，保留配置范围、策略依赖和人工审查。
 
-**Before:**
-> This tool will attempt to synchronize state across the various backends that have been configured, and if a conflict is detected it may resolve it automatically depending on the strategy that has been set, or otherwise it will surface the conflict for manual review.
+改写没有增加“读取策略”这样的内部步骤。原文的 `otherwise` 没有明确说明是“不允许自动解决”还是“自动解决没有成功”，正式改写保留这一未确定的分支表达。不能擅自声称允许但解决失败时必然提交审查。若用户要求进一步确定该分支，必须澄清源规则。
 
-**Violations flagged:**
-- Two instructions in one sentence (sync + resolve/surface).
-- Present perfect in the relative clauses ("have been configured", "has been set").
-- 44 words, far over the 25-word descriptive cap.
+## 示例 B：错误消息
 
-Note what is *not* flagged: "will attempt to" and "may resolve". Those are hedges, not violations. The tool is not promised to succeed, and the rewrite must not promise it either.
+参阅语料 `B`。原文只推测请求处理期间可能发生错误，不足以断言整个请求失败。改写保留 `may have occurred`，将可能的格式不匹配及可能的过时客户端原因分别写出。
 
-**After:**
-> The tool tries to synchronize state across the configured backends. If it finds a conflict, it reads the configured strategy. If the strategy allows automatic resolution, the tool may resolve the conflict without a user. If the tool does not resolve the conflict, it reports the conflict for manual review.
+改写没有添加服务器这一原文未明确的 actor，没有添加“检查客户端版本”行动，也没有声称某原因最常见。`may have occurred` 承载不确定性和时间信息，即使被简单时态规则提示，也应保留。
 
-The last sentence branches on whether the conflict was resolved, not on what the strategy allows. That is what "or otherwise" meant in the original: the fallback covers a permitted resolution that still did not happen.
+## 示例 C：智能体间指令
 
-### Example B — Error message
+参阅语料 `C`。原文要求上游任务完成且未报告错误，下游智能体才 `should` 使用产物。改写保留这两个条件，以及建议强度 `should`；不把它改成直接执行命令。
 
-**Before:**
-> An error may have occurred while processing your request due to a possible mismatch in the expected data format, which could be caused by an outdated client version.
+不完整产物在超时条件下出现的频率 `sometimes` 也被保留。原文没有确定生产者，也没有证明超时是原因，因此保留被动表达 `Partial artifacts are sometimes produced under timeout conditions.`。原文没有要求等待动作、完整性检查或失败处置，改写没有新增这些步骤。若用户要求编辑建议，可以单独讨论检查完整性的必要性，但它不是原文内容。
 
-**Violations flagged:**
-- One sentence carrying three separate claims (an error occurred, a format mismatch, a client version).
-- 28 words, over the descriptive cap.
+## 示例 D：README 说明
 
-Not flagged: "may have occurred" and "could be caused by". The message is written by a system that does not know what went wrong. Both hedges are accurate reporting of that ignorance.
+参阅语料 `D`，采用 STE-flavored 模式。改写将两个观点拆为两句，并保留以下信息：接入现有技术栈是设计意图，接入强调 `seamlessly` 和 `minimal friction`，没有 `vendor lock-in`，通过 `semantic similarity` 大幅减少传统上困扰 LLM 工作负载的缓存未命中。
 
-**After:**
-> Your request may have failed. The cause may be a data format that does not match what the server expects. An outdated client can cause this mismatch. Check your client version.
+`designed to` 不能删成已经实现的保证；`dramatically` 等程度主张也不能默认删成较弱事实。该示例没有提供测量依据，中文分析只能说明无法从原文核验主张，不能虚构数据或宣称性能已验证。
 
-**This example is the reason the modality rule exists.** An earlier version of this file rewrote the first sentence as "The request failed", and the third as "an outdated client **is the most common cause**". Both read better. Both are wrong: the first asserts a failure the system only suspects, and the second invents a frequency claim that appears nowhere in the input. A rewrite that supplies a cause, a frequency, or a mechanism has stopped being a rewrite.
+正式改写没有引入普通缓存的精确匹配机制、与技术栈并行的运行拓扑或数据不会离开技术栈的保证。这些内容不能从原文推出。
 
-Note also that "may have failed" keeps a compound verb form that the simple-tense rule would otherwise remove. **When the tense rule and the modality rule conflict, modality wins** — dropping the auxiliary here would delete the uncertainty along with the tense.
+## 其他规则语料
 
-### Example C — Inter-agent instruction
+| 编号 | 展示内容 | 保真要求 |
+|---|---|---|
+| R1 | 用直接动词替代动作名词化。 | 原文已经要求检查，不新增操作。 |
+| R2 | 将 `take off` 改为表示移除的直接动词。 | 对象仍为原文的检修面板；不声称替代词获得官方批准。 |
+| R3 | 保留情态完成式 `may have failed`。 | 不能为简单时态删除不确定性；无需改动时原样返回。 |
+| R4 | 不同动作使用不同动词。 | 启动服务与启动浏览器不因 `start`、`launch` 相近就必须统一。 |
+| R5 | 将安全条件放在指令开头。 | 保留 `only after` 的限制强度，不增加安全要求。 |
 
-**Before:**
-> Once the upstream job has completed and assuming no errors were raised, the downstream agent should proceed to consume the output artifact, though it is worth noting that partial artifacts are sometimes produced under timeout conditions.
-
-**Violations flagged:**
-- Present perfect ("has completed") and subordinate-clause stacking ("assuming...", "though it is worth noting...").
-- One sentence, three separate facts (completion condition, next action, edge-case warning).
-- 36 words, over the 20-word instruction cap.
-
-**After:**
-> Wait for the upstream job to finish with no errors. Then read the output artifact. Warning: a timeout can produce a partial artifact. Check that the artifact is complete before you use it.
-
-Two deliberate calls worth stating rather than hiding:
-- "should proceed to consume" became the imperative "read". STE permits this for instructions, where a recommendation addressed to the executing agent is a command. Do not make the same move in descriptive text.
-- The final sentence is **new**. The original warned about partial artifacts without saying what to do about it. Adding the check makes the warning actionable, but it is added content, so it is called out here rather than passed off as a rewrite. If the source's silence was deliberate, drop the sentence.
-
-### Example D — README prose (STE-flavored mode)
-
-**Before:**
-> Our caching layer is designed to slot seamlessly into your existing stack with minimal friction and no vendor lock-in; it leverages semantic similarity to dramatically reduce the cache misses that traditionally plague LLM workloads.
-
-**Violations flagged:**
-- Marketing adjectives and claims without measurement ("seamlessly", "minimal friction", "dramatically").
-- Semicolon joining two separate ideas.
-- Nominalization and soft phrasing ("is designed to slot into", "leverages").
-- 34 words, over the 25-word descriptive cap.
-
-**After:**
-> A normal cache matches requests by exact text, so a small change in wording causes a cache miss. This cache compares the meaning of a new prompt against the prompts it already holds. It runs alongside your current stack and stores no data outside it.
-
-Flavored mode kept the explanatory rhythm and did not force one fixed term per concept. It still cut the marketing adjectives, the semicolon, and the length.
-
-## How to Read These Examples
-
-Part 1 shows the actual rules this skill is built on. Part 2 shows the transfer: the same discipline — one meaning per word, active voice, simple tense, one instruction per sentence, explicit conditions instead of buried subordinate clauses — makes machine-to-machine and cross-language text safer to parse, not just aircraft manuals.
+检查器出现 advisory 时仍需结合语境判断。检查器没有出现问题，也不能证明上述条件、情态和产品主张已保真；改写流程必须另行对照原文。

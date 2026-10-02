@@ -1,0 +1,107 @@
+[
+  {
+    "id": "A",
+    "text_type": "description",
+    "before": "This tool will attempt to synchronize state across the various backends that have been configured, and if a conflict is detected it may resolve it automatically depending on the strategy that has been set, or otherwise it will surface the conflict for manual review.",
+    "after": "This tool will attempt to synchronize state across the configured backends. For detected conflicts, it may resolve them automatically depending on the configured strategy, or otherwise it will report them for manual review.",
+    "expected_before_words": 44,
+    "expected_after_words": 33,
+    "expected_after_sentence_words": [
+      11,
+      22
+    ]
+  },
+  {
+    "id": "B",
+    "text_type": "description",
+    "before": "An error may have occurred while processing your request due to a possible mismatch in the expected data format, which could be caused by an outdated client version.",
+    "after": "An error may have occurred while processing your request. It may be due to a mismatch in the expected data format. An outdated client version could cause this mismatch.",
+    "expected_before_words": 28,
+    "expected_after_words": 29,
+    "expected_after_sentence_words": [
+      9,
+      12,
+      8
+    ]
+  },
+  {
+    "id": "C",
+    "text_type": "instruction",
+    "before": "Once the upstream job has completed and assuming no errors were raised, the downstream agent should proceed to consume the output artifact, though it is worth noting that partial artifacts are sometimes produced under timeout conditions.",
+    "after": "Once the upstream job completes, the downstream agent should consume the output artifact if no errors were raised. Partial artifacts are sometimes produced under timeout conditions.",
+    "expected_before_words": 36,
+    "expected_after_words": 26,
+    "expected_after_sentence_words": [
+      18,
+      8
+    ]
+  },
+  {
+    "id": "D",
+    "text_type": "description",
+    "before": "Our caching layer is designed to slot seamlessly into your existing stack with minimal friction and no vendor lock-in; it leverages semantic similarity to dramatically reduce the cache misses that traditionally plague LLM workloads.",
+    "after": "Our caching layer is designed to integrate seamlessly into your existing stack with minimal friction and no vendor lock-in. It uses semantic similarity to dramatically reduce the cache misses that traditionally trouble LLM workloads.",
+    "expected_before_words": 34,
+    "expected_after_words": 34,
+    "expected_after_sentence_words": [
+      19,
+      15
+    ]
+  },
+  {
+    "id": "R1",
+    "text_type": "instruction",
+    "before": "Perform an inspection of the filter.",
+    "after": "Inspect the filter.",
+    "expected_before_words": 6,
+    "expected_after_words": 3,
+    "expected_after_sentence_words": [
+      3
+    ]
+  },
+  {
+    "id": "R2",
+    "text_type": "instruction",
+    "before": "Take off the access panel.",
+    "after": "Remove the access panel.",
+    "expected_before_words": 5,
+    "expected_after_words": 4,
+    "expected_after_sentence_words": [
+      4
+    ]
+  },
+  {
+    "id": "R3",
+    "text_type": "description",
+    "before": "The job may have failed.",
+    "after": "The job may have failed.",
+    "expected_before_words": 5,
+    "expected_after_words": 5,
+    "expected_after_sentence_words": [
+      5
+    ]
+  },
+  {
+    "id": "R4",
+    "text_type": "instruction",
+    "before": "Start the service. Launch the browser.",
+    "after": "Start the service. Launch the browser.",
+    "expected_before_words": 6,
+    "expected_after_words": 6,
+    "expected_after_sentence_words": [
+      3,
+      3
+    ]
+  },
+  {
+    "id": "R5",
+    "text_type": "instruction",
+    "before": "Remove the panel only after you disconnect the power supply.",
+    "after": "Only after you disconnect the power supply, remove the panel.",
+    "expected_before_words": 10,
+    "expected_after_words": 10,
+    "expected_after_sentence_words": [
+      10
+    ]
+  }
+]

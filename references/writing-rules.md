@@ -1,59 +1,46 @@
-# ASD-STE100 Writing Rules — Summary and Sources
+# ASD-STE100：背景、规则类别与来源
 
-This file summarizes the public, official description of ASD-STE100 (Simplified Technical English). It paraphrases rule *categories*. It does not reproduce the standard's text or its ~900-word dictionary verbatim. For the authoritative document, request the free download at the official site.
+本文转述既有公开资料中的规则类别，不复现标准原文或批准词典。它用于解释背景，不定义技能的执行流程；本项目的行为契约以 [SKILL.md](../SKILL.md) 为准，机械检查能力以 [检查器说明](linter.md) 为准。
 
-## What ASD-STE100 Is
+## 标准背景
 
-ASD-STE100 is a controlled natural language, first released in 1986 (as AECMA Document PSC-85-16598) by what is now ASD (the AeroSpace and Defense Industries Association of Europe). It was built at the request of European airlines — most staffed by non-native English speakers — who needed maintenance documentation that could not be misread, because a misread instruction on an aircraft can kill people. The standard is maintained by the Simplified Technical English Maintenance Group (STEMG) and has been free to download since Issue 6 (2013). The current edition is Issue 9 (January 2025).
+ASD-STE100 是受控自然语言标准，最初于 1986 年发布，当时编号为 AECMA Document PSC-85-16598。其需求来自需要减少英文维护文档误读的航空行业，尤其面向非英语母语者。标准由简明技术英语维护组（STEMG）维护。
 
-## Structure
+本文依据 ASD-STE100 第 9 版（2025 年 1 月）的既有资料，概括 9 个部分、53 条写作规则。词典约含 900 个批准词，并为约 1,200 个不批准词提供替代建议；批准词受到含义和词性的限制。标准允许组织定义所需的技术名词和技术动词，以表达领域内容。
 
-- **53 writing rules across 9 sections** covering word choice, grammar, sentence structure, and style.
-- **A dictionary** of roughly 900 approved words, each restricted to one meaning and one part of speech, plus roughly 1,200 words to avoid with suggested replacements.
-- **A terminology allowance**: organizations may define their own dictionary of approved technical nouns and verbs beyond the base ~900 words, for domain-specific vocabulary the base dictionary can't cover.
+## 规则类别
 
-## Rule Categories (Paraphrased)
+| 类别 | 背景要点 |
+|---|---|
+| 词语选择 | 按批准含义和词性使用批准词；技术术语需要一致且明确。选择批准动词描述动作，避免动作名词化和含义不透明的短语动词。 |
+| 动词形式 | 使用受限的简单形式；复合时态及 `-ing` 动词形式受到限制，技术名词等有特定例外。 |
+| 语态 | 指令使用主动语态；说明性文字在施事者未知或无关时可以使用被动语态。 |
+| 句子 | 每句一条指令；指令句长目标为 20 词、说明句长目标为 25 词；不通过省略必要成分缩短句子。 |
+| 名词与标点 | 避免超过 3 个词的名词堆叠；不用分号。其他标点是否适合仍取决于句子结构。 |
+| 段落与列表 | 每段一个主题，目标最多 6 句；用纵向列表组织步骤、条件或复杂枚举。 |
+| 安全说明 | 安全关键指令以明确命令或条件开头，使条件和动作的关系清楚。 |
 
-**Word choice**
-- Use approved words only in their approved meaning and part of speech.
-- Each word maps to exactly one meaning — don't rely on context to disambiguate a word that has several dictionary senses.
-- Prefer the plainer, shorter, more common word over a formal or rare synonym.
-- Use an approved verb for an action, not a noun derived from that verb (Rule 3.7).
-- Do not make phrasal verbs by putting a verb and a preposition together (Rule 9.3). Their meaning is not predictable from the parts, and non-native readers and translation systems both mishandle them.
+这些规则面向受控技术英语。迁移到错误消息、状态报告或一般说明时，机械套用简单时态和词数限制可能改变时间关系或要求强度。本技能因此将保真置于风格约束之前，具体例外只由 SKILL.md 定义。
 
-**Verb forms**
-- Permitted forms: infinitive, imperative, simple present, simple past, simple future, and past participle used only as an adjective.
-- No present perfect, past perfect, or other compound/auxiliary constructions. "We have received" is not allowed. "We received" is allowed.
-- "-ing" forms are permitted only as a technical noun or as part of a technical noun, not as a verb form.
+## 词典与授权边界
 
-**Voice**
-- Active voice is required for procedures and instructions.
-- Passive voice is allowed only in descriptive text, and only when the actor performing the action is genuinely unknown or irrelevant to the reader.
+标准可以免费申请获取，但免费获取不等于可以自由再发行。第 9 版的授权说明对复制和发布提出限制，并列出特定组织类别的免费复制条件；分发标准内容应依据正式授权文本。
 
-**Sentence structure**
-- One instruction per sentence.
-- Maximum ~20 words per sentence for procedures and instructions. Maximum ~25 words for descriptive text.
-- Do not omit sentence parts (verb, subject, article) just to shorten the sentence — the standard explicitly warns that this creates ambiguity rather than clarity.
-- Noun clusters (strings of nouns stacked as a modifier) are capped at 3 words.
-- Semicolons are not permitted at all (Rule 8.1): "You can use all standard English punctuation marks but not the semicolon (;)." Write separate sentences instead. Every other standard mark, including the em dash, remains permitted.
+本仓库不附带约 900 词的正式批准词典，也不核验具体英文词是否具有批准含义和词性。Strict 模式中的术语一致是文档内部要求，不是批准词典认证。不能把“使用常见词”说成“已符合官方词典”。
 
-**Paragraph and document structure**
-- One topic per paragraph.
-- Maximum ~6 sentences per paragraph.
-- Use vertical (numbered or bulleted) lists for sequences, conditions, or complex enumerations instead of burying them in prose.
+需要正式标准时，可通过 [ASD-STE100 官方申请页面](https://www.asd-ste100.org/STE_downloads.html)申请获取，并以所获版本的规则和授权说明为准。本项目的 MIT 许可证不能替代标准内容的授权。
 
-**Safety instructions**
-- Safety-critical instructions must open with a clear command or condition, not be buried mid-sentence.
+## 应用于智能体文本
 
-## Why This Skill Repurposes STE for Agent Output
+智能体、翻译流程和非英语母语读者都可能遇到含糊的 actor、条件或动词。明确原文已有的对象、动作及条件，可以减少误读。但受控结构本身不能验证内容正确，也不能推断缺失的系统行为。示例中的保真取舍见 [改写示例](../examples/before-after.md)。
 
-STE was designed to eliminate ambiguity for a reader who cannot ask a follow-up question — a technician on a tarmac, working from a manual, with no author to call. An AI agent parsing another agent's output, a tool description, or a system message is in the same position: no back-channel to resolve "does this passive-voice sentence mean the caller does X, or the callee does X?" The same rule set that protects an airline mechanic from a misread torque spec protects a downstream agent from a misread instruction.
+## 既有来源
 
-## Sources
+以下来源供读者继续查阅。官方标准及其授权文本是正式依据。
 
-- [ASD-STE100 official site](https://www.asd-ste100.org/)
-- [ASD-STE100 — About STE](https://www.asd-ste100.org/about_STE.html)
-- [ASD Europe — Simplified Technical English](https://www.asd-europe.org/standards-specifications/simplified-technical-english/)
-- [Simplified Technical English — Wikipedia](https://en.wikipedia.org/wiki/Simplified_Technical_English)
-- [TechScribe — ASD-STE100 Simplified Technical English](https://www.techscribe.co.uk/techw/asd-simplified-technical-english.htm)
-- [SKYbrary — Simplified Technical English (STE)](https://skybrary.aero/articles/simplified-technical-english-ste)
+- [ASD-STE100 官方网站](https://www.asd-ste100.org/)
+- [ASD-STE100：STE 简介](https://www.asd-ste100.org/about_STE.html)
+- [ASD Europe：简明技术英语](https://www.asd-europe.org/standards-specifications/simplified-technical-english/)
+- [简明技术英语：维基百科](https://en.wikipedia.org/wiki/Simplified_Technical_English)
+- [TechScribe：ASD-STE100 简明技术英语](https://www.techscribe.co.uk/techw/asd-simplified-technical-english.htm)
+- [SKYbrary：简明技术英语（STE）](https://skybrary.aero/articles/simplified-technical-english-ste)

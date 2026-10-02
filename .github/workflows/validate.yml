@@ -1,0 +1,26 @@
+name: 验证
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ["22.0.0", "22"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: 检查源文件编码与换行
+        run: node scripts/check-install.mjs --check-text-files
+      - name: 运行 Node 回归测试
+        run: node scripts/run-tests.mjs
+      - name: 检查安装副本
+        run: node scripts/check-install.mjs

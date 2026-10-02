@@ -1,0 +1,2 @@
+# graft 的本地图缓存可通过 `graft build` 重新生成，不提交到 Git。
+/graft/
