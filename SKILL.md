@@ -2,7 +2,7 @@
 name: asd-ste100
 description: "用于澄清或简化英文工具说明、错误消息、智能体间指令、系统提示和状态报告，以及文字密集或含糊的英文说明。触发词：消除歧义、STE100 改写、应用 Simplified Technical English、受控语言改写。保留原文事实、要求强度和技术术语。默认只输出英文改写稿。"
 metadata:
-  version: "0.6.0"
+  version: "0.1.0"
 ---
 
 # Simplified Technical English（简明技术英语，ASD-STE100）
