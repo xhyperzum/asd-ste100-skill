@@ -14,6 +14,14 @@ node scripts/evaluate.mjs --model MODEL_ID --output /tmp/ste-evaluation.json --c
 
 将 `MODEL_ID`、`MODEL_ADAPTER` 和 `ARGUMENT` 换成实际标识、可执行程序及参数。所有评测参数必须位于 `--command` 前；其后的内容完全作为适配器 argv。脚本不会安装或猜测模型工具。
 
+### 适配器必须隔离运行环境
+
+适配器承接的是完整技能，因此它自身的额外上下文会成为混杂变量。若底层模型 CLI 会自动载入宿主机的全局指令、项目指令、提示模板或扩展，那些内容会进入系统提示，与技能契约直接竞争。
+
+实测例子：本机全局 `AGENTS.md` 强制「默认使用简体中文」，而技能要求「输出语言随原文」。带全局指令运行时，英文案例的输出语言会被宿主配置影响。
+
+因此适配器应显式关闭这些自动加载（以 pi CLI 为例：`--no-extensions --no-tools --no-mcp --no-context-files --no-prompt-templates`）。**未隔离环境时得到的评测结果依赖本机配置，其他调用方无法复现；这类结果不能用来比较不同技能版本。**
+
 可选参数：
 
 | 参数 | 用途 |
