@@ -20,7 +20,8 @@ node scripts/check-install.mjs                      # 资源清单 + 临时安�
 
 ## 约定
 
-- **测试**：`tests/test_*.mjs` 由 `run-tests.mjs` 动态发现。空文件、`skip`、`todo`、符号链接一律判定为失败，新增测试写真实断言，不要用占位。
+- **测试**：`tests/test_*.mjs` 由 `run-tests.mjs` 动态发现，且必须全部登记到 `scripts/check-install.mjs` 的必需资源清单（由 `tests/test_consistency.mjs` 校验）。下列输入一律判定失败：空文件、`tests/` 下的子目录、非 `test_*.mjs` 的 `.js`/`.cjs`/`.mts`/`.cts` 或大小写变体、`skip`、`todo`、取消、失败，以及已排队但未完成的测试（提前 `process.exit` 会留下未完成项）。新增测试写真实断言。
+- **评测适配器必须隔离环境**：评测用适配器按完整技能调用模型，因此宿主机自动加载的全局指令、提示模板和扩展会成为混杂变量。本机全局 `AGENTS.md` 强制中文输出，与技能「输出语言随原文」的契约直接冲突。适配器必须显式关闭这些加载（以 pi 为例：`--no-extensions --no-tools --no-mcp --no-context-files --no-prompt-templates`），否则结果依赖本机配置、别人无法复现。详见 [评测说明](references/evaluation.md)。
 - **规则来源**：`SKILL.md` 的核心改写规则表是执行规则的唯一来源。`references/chinese-writing-rules.md` 只登记中文差异（阈值、计数口径、检查深度）并引用 SKILL.md；`references/writing-rules.md` 只讲背景与来源；`scripts/ste-lint.mjs` 只实现可机械检查的子集。四处都不复制规则正文。新增或修改检查器规则时，必须同时在 SKILL.md（或中文规范）、`references/linter.md` 和评测覆盖表登记。
 - **技能资源清单**：`scripts/check-install.mjs` 顶部的列表声明「哪些路径必须存在」。它是白名单而不是闭集：新增文件**不会**因为没有登记而失败，删掉已登记的文件才会失败。被 markdown 链接引用但未登记的文件由链接检查兼管，报错信息指向链接而不是清单。
 - **语言**：仓库文档、脚本帮助与错误信息用简体中文。技能处理英文与中文两类原文：英文规则见 `SKILL.md`，中文规则见 `references/chinese-writing-rules.md`，由检查器的 `--language` 选择。`SKILL.md` 的 `description` 是触发入口，改它等于改技能的调用条件。
@@ -34,3 +35,5 @@ node scripts/check-install.mjs                      # 资源清单 + 临时安�
 ## 评测记录
 
 `evals/results/` 是历史快照，只覆盖当时的技能版本与案例，不能当作当前版本行为已通过的证明。改规则或案例集时同步 `references/evaluation.md` 的覆盖表；CI 不调用模型。
+
+评测约束（`evals/cases.json` 的 `invariants`）只有子串匹配能力，**无法判断语义等价**。经验：把「结构是否改善」交给 `human_review`，只用 `contains` 检查必须保留的事实性片段（技术串、数值、否定关系）。凡是拿整句措辞做断言，迟早会误杀合法改写或漏掉真问题（已出现四次实例：三次误杀、一次漏检，见 [评测说明](references/evaluation.md)）。新增或修改约束后，用 `tests/test_case_acceptance.mjs` 的接受度测试锁住「合法改写不被误杀」。
