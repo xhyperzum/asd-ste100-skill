@@ -57,17 +57,23 @@ node scripts/ste-lint.mjs --list-rules
 
 ## 开发与验证
 
+验证入口、必需资源和 CI 说明见 [安装验证说明](references/installation.md)。本地主检查：
+
 ```bash
 node scripts/ste-lint.mjs --selftest
 node scripts/run-tests.mjs
 node scripts/check-install.mjs
 ```
 
-第一条只运行检查器回归；第二条动态发现 `tests/test_*.mjs` 并运行全部工具回归，拒绝空测试文件、skip 和 todo 占位；第三条将技能运行资源复制到临时安装目录，验证资源和从其他目录运行工具的能力。安装时需保留 `references/`、`examples/`、`scripts/`、`tests/` 和 `evals/`。完整内容与运行环境要求见 [安装验证说明](references/installation.md)。GitHub Actions 在 Node.js 22.0.0 和 22 系列版本上执行编码检查、共享 runner 和临时安装验证。
+第二条动态发现 `tests/test_*.mjs` 并运行全部工具回归，拒绝空测试文件、子目录、命名不合规文件、skip、todo 和排队后未完成的测试；第三条将技能运行资源复制到临时安装目录。跨文件一致性（规则表、版本号、覆盖表、资源清单）由 `tests/test_consistency.mjs` 守护，随回归一起运行。GitHub Actions 在 Node.js 22.0.0 和 22 系列版本上执行编码检查、共享 runner 和临时安装验证。
+
+仓库自身文档不适用中文 30 字句长上限，它是解释性长文而不是操作指令。这一点在中文规范里未写入，因此本项目不对自己的文档跑 `--language zh` 硬性门禁。
 
 技能的改写行为另用 [模型行为评测](references/evaluation.md) 检查。评测保存实际模型输出，自动约束检查后仍需复核语义保真；CI 不调用模型。示例语料中的预写改写稿只用于回归，不计为模型行为评测结果。
 
-[2026-10-02 的实际运行与独立代理复核](evals/results/review-2026-10-02.md)记录了 `gpt-6.1-sol` 的历史 10 个案例结果；结论只覆盖当时的技能和案例。当前技能为 0.1.0，正式案例集扩展为 24 例，覆盖两种模式、分析输出、原文边界澄清、列表、段落和保真例外；规则与案例的对应关系见 [评测覆盖表](references/evaluation.md)。历史记录原样保留，不能作为新版模型行为已通过的证明；本轮新增案例尚无新的实际模型调用记录。
+[2026-10-02 的实际运行与独立代理复核](evals/results/review-2026-10-02.md)记录了 `gpt-6.1-sol` 的历史 10 个案例结果；结论只覆盖当时的技能和案例。当前技能为 0.1.0，正式案例集扩展为 38 例，覆盖两种模式、分析输出、原文边界澄清、列表、段落、中文分支和保真例外；规则与案例的对应关系见 [评测覆盖表](references/evaluation.md)。0.1.0 是中文分支并入后的重新编号，新于历史快照中的 0.6.0，两者不能按 semver 比较；原因与历史记录索引见[评测记录说明](references/evaluation.md#版本线说明)。
+
+当前 38 例已有三轮全量真实模型调用记录（第三轮用最终约束集），并对 5 个边界与歧义类案例重复跑过 5 轮（`wokey/claude-opus-5-5`，见[评测记录说明](references/evaluation.md#真实评测结论2026-10-10)）。结果不能算作通过：`source-boundary-clarification` 5 轮中 3 轮未按要求先澄清原文范围；`steps-as-list` 曾以裸换行代替列表；`simple-tense-conversion` 5 轮中 1 轮未改简单时态。这些案例在不同轮次间结论不同，属不稳定。单轮评测不能证明技能行为已通过，历史记录也不能代替当前版本的实际运行。
 
 ## 资源导航
 

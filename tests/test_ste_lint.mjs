@@ -753,10 +753,16 @@ test('CLI：--language zh 的规则目录与禁用规则', () => {
   catalog = runCli(['--language', 'zh', '--json', '--disable', 'zh-passive'], '配置被修改了。');
   assert.equal(catalog.status, 0);
   assert.equal(JSON.parse(catalog.stdout).count, 0);
-  assert.equal(runCli(['--language', 'zh', '--disable', 'semicolon'], 'Clear.').status, 0);
+  // 跨语言 ID 必须报错；只有当前语言启用的规则可以禁用。
+  const crossLanguage = runCli(['--language', 'zh', '--disable', 'semicolon'], 'Clear.');
+  assert.equal(crossLanguage.status, 2);
+  assert.match(crossLanguage.stderr, /属于 --language en/);
   const unknown = runCli(['--language', 'zh', '--disable', 'nope'], 'Clear.');
   assert.equal(unknown.status, 2);
   assert.match(unknown.stderr, /未知规则 ID/);
+  const otherWay = runCli(['--language', 'en', '--disable', 'zh-semicolon'], 'Clear.');
+  assert.equal(otherWay.status, 2);
+  assert.match(otherWay.stderr, /属于 --language zh/);
 });
 
 test('CLI：无效语言和自检携带语言被拒绝', () => {
@@ -774,6 +780,13 @@ test('中文：列表化提示三个或更多要求', () => {
   assert.equal(findings[0].match, '3 项要求');
   assert.equal(findings[0].level, 'advisory');
   assert.deepEqual(findingsFor('必须启动服务。可以记录日志。', 'zh-list-required', { language: 'zh' }), []);
+  // 单字「应」「须」曾命中「响应」「应用」「必须」等普通词，导致误报。
+  const falsePositive = '系统返回响应。应用读取对应配置。需要的字段已列出。';
+  assert.deepEqual(findingsFor(falsePositive, 'zh-list-required', { language: 'zh' }), []);
+  assert.deepEqual(findingsFor('这一项需要处理。', 'zh-list-required', { language: 'zh' }), []);
+  // 真实的要求强度词仍然计数。
+  assert.equal(findingsFor('必须先停止服务。应当记录配置。可以重试一次。',
+    'zh-list-required', { language: 'zh' }).length, 1);
 });
 
 test('中文：段落主题超过六句时提示分段', () => {

@@ -21,15 +21,20 @@ export const REQUIRED_PATHS = Object.freeze([
   ['references/evaluation.md', 'file'],
   ['references/installation.md', 'file'],
   ['references/chinese-writing-rules.md', 'file'],
+  ['references/writing-rules.md', 'file'],
+  ['examples/before-after.md', 'file'],
+  ['examples/linter-edge-cases.md', 'file'],
   ['examples/fixtures.json', 'file'],
   ['tests', 'dir'],
   ['tests/test_install.mjs', 'file'],
   ['tests/test_evaluate.mjs', 'file'],
   ['tests/test_ste_lint.mjs', 'file'],
   ['tests/test_run_tests.mjs', 'file'],
+  ['tests/test_consistency.mjs', 'file'],
+  ['tests/test_case_acceptance.mjs', 'file'],
 ]);
 
-const TEXT_EXTENSIONS = new Set(['.py', '.mjs', '.md', '.json', '.yml', '.yaml']);
+const TEXT_EXTENSIONS = new Set(['.mjs', '.md', '.json', '.yml', '.yaml']);
 const CACHE_NAMES = new Set(['.git', '.omc', 'graft', 'node_modules', '__pycache__', '.pytest_cache', '.mypy_cache']);
 const CODE_FENCE = /^ {0,3}(?<marker>`{3,}|~{3,})(?<tail>.*)$/u;
 const CHECKER_PATH = realpathSync(fileURLToPath(import.meta.url));
@@ -172,7 +177,7 @@ function markdownTargets(text) {
   const targets = [];
   const references = new Map();
   const normalize = label => label.trim().replace(/\s+/gu, ' ').toLowerCase();
-  const prose = proseWithoutCode(text).replace(/^ {0,3}\[([^\]\n]+)\]:[ \t]*(.+)$/gmu, (line, label, value) => {
+  const prose = proseWithoutCode(text).replace(/^ {0,3}\[([^\]\n]+)\]:[ \t]*(.+)$/gmu, (_line, label, value) => {
     const key = normalize(label);
     if (!references.has(key)) {
       references.set(key, value);

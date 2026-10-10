@@ -59,9 +59,65 @@ node scripts/evaluate.mjs --model MODEL_ID --output /tmp/ste-evaluation.json --c
 
 约束 `contains`、`forbidden`、`any_contains`、`not_equals` 为非空字符串数组；`equals_input` 和 `requires_list` 为布尔值。`requires_list: true` 只检查至少三个受支持的 Markdown 列表项，不判断各项是否对应原动作、保留要求强度或顺序。纯空白的非空片段可以用于有限格式检查。数量、单位和技术标识写在 source 字符串中，不增加数值或嵌套 metadata 字段。JSON 文件按通用换行口径读取；文本身份以实际规范化后提交的内容及摘要为准。
 
-当前技能为 0.1.0，案例集扩展为 24 例。原 10 例的请求和约束也已修订，减少在请求中直接教给模型检查目标，并为确定需要改写的输入增加原文回显排除；无需改动及固定内容例外不强迫变更。案例或技能变化会改变摘要。
+当前技能为 0.1.0，案例集扩展为 38 例。原 10 例的请求和约束也已修订，减少在请求中直接教给模型检查目标，并为确定需要改写的输入增加原文回显排除；无需改动及固定内容例外不强迫变更。案例或技能变化会改变摘要。
 
-[历史 10 例运行及独立代理复核](../evals/results/review-2026-10-02.md)及其原始报告保留原始字节，描述的是当时的技能、案例和提示。历史文档中的“当前文件”核对是该次复核时的结果，不能解释为与此后的 0.1.0 或 24 例相同。新增案例与本轮修订尚未获得新的实际模型调用记录；不得沿用历史通过结果作为新版模型验证。
+### 版本线说明
+
+本仓库曾在 0.5.0、0.6.0 的 0.x 历史线上运行过 10 例与 24 例评测。引入中文分支后，我们放弃该编号线，从 0.1.0 重新编号：中文分支改变了技能的适用范围和输出契约，不是同一产品线的小幅修订。因此 0.1.0 **新于**历史快照中的 0.6.0，两者不能按 semver 比较，也不能互相代替。使用 `npx skills update` 时请勿把 0.1.0 当成降级。
+
+### 历史记录索引
+
+| 记录 | 覆盖范围 | 类型 |
+|---|---|---|
+| [2026-10-02 实际运行与代理复核](../evals/results/review-2026-10-02.md) | 0.5.0 的 10 例 | 外部模型调用 + 代理复核 |
+| [代理前向 round-1](../evals/results/agent-forward-2026-10-02-round-1.json) | 0.6.0 的 24 例 | 代理前向，非外部模型调用 |
+| [代理前向 round-2](../evals/results/agent-forward-2026-10-02-round-2.json) | 0.6.0 的 24 例 | 代理前向，非外部模型调用 |
+| [代理前向 round-3](../evals/results/agent-forward-2026-10-02-round-3.json) | 0.6.0 的 24 例 | 代理前向，非外部模型调用 |
+| [修复复核](../evals/results/repair-review-2026-10-02.md) | 上述记录的汇总复核 | 代理复核 |
+| [真实模型评测](../evals/results/real-model-2026-10-10-rounds.json) | 0.1.0 的 38 例，两轮 | 外部模型调用（`wokey/claude-opus-5-5`） |
+
+上述记录均绑定当时的 SKILL.md 与案例摘要，任何一条都不能作为其他版本的证明。
+
+### 真实评测结论（2026-10-10）
+
+`wokey/claude-opus-5-5` 跑过三轮全量 38 例（第三轮用修正后的最终约束集），另对 5 个边界与歧义类案例重复跑了 5 轮。约束集在轮次间被修改过，因此历史判定不能反推。
+
+#### 行为不稳定
+
+以下三例在不同轮次间结论不同，均属不稳定，不是稳定缺陷：
+
+- `source-boundary-clarification`：5 轮中 2 轮先请求澄清（符合 SKILL.md 第 30 行），3 轮直接改写未澄清。
+- `simple-tense-conversion`：5 轮中 4 轮改为简单过去时，1 轮原样保留完成时。
+- `steps-as-list`：前两轮正确输出 4 项列表，第三轮改为裸换行（4 个非空行、0 个列表标记）；裸换行在 Markdown 中渲染为单个段落，不符合 SKILL.md:68 的列表要求。
+
+#### 稳定遵守（以 3 轮以上为据）
+
+- `ambiguous-actor`：5 轮全部先请求澄清；`analysis-output`：5 轮全部通过。
+- `safety-condition-first`：5 轮均完成条件前置，措辞在 `Do not...until` 与 `Before you remove...` 之间变化；措辞差异不代表失败。
+- `terminology-consistency`：前两轮未统一 `duplicates`，**第三轮正确统一为 `copies` 并通过检查**。
+
+> 已更正的错误结论：本记录早期版本据前两轮写「`terminology-consistency` 两轮输出完全一致、稳定不遵守」。第三轮推翻了它。**两轮的一致性不能推断稳定性**；本记录中所有「稳定」表述均已改为以 3 轮以上数据或明确的多数分布为据。
+
+#### 修正的约束缺陷
+
+四处，都是同一类错误——用字面串匹配判断语义，把合法改写判为失败。修正前后均以真实模型输出回归验证：
+
+| 案例 | 原约束的问题 |
+|---|---|
+| `ambiguous-actor` | 只接受英文 `?`；模型用「请指出」式中文澄清，被误判 |
+| `safety-condition-first` | 只接受 4 种条件前置写法；`Do not X until Y` 被误判 |
+| `source-boundary-clarification` | 只接受「请确认」；模型写「请**先**确认」，插词导致误判 |
+| `safety-condition-first` | 只检查条件是否前置，丢掉第二句的 `do not reconnect` 否定仍能通过 |
+
+**结论：单轮评测不能作为技能行为已通过的证据。** 三轮已足以区分「稳定」与「不稳定」，但不足以给出通过率；各轮失败数（前三轮为 5、2、2）也不可直接相减，因为中间改过约束集。
+
+第三轮（最终约束集）的 2 项未通过：`source-boundary-clarification`（未澄清）与 `steps-as-list`（裸换行）。两者都是模型的真实不合规，不是约束缺陷。
+
+### 已知约束短板
+
+`ambiguous-actor` 使用 `any_contains` 检查是否出现澄清措辞。把原文原样加一个问号即可通过自动约束。这一短板不修：该案例的正确行为就是提问，收紧会重新引入对合法澄清的误杀（首轮已发生过一次）。该案例的 `human_review` 要求复核「澄清重点是原文区域，不是无关词义或模式」，只能人工判读。
+
+`semantic_approval` 始终保持 `pending-human-review`。已完成的语义复核由生成记录的同一会话代理完成，**不是独立复核**，结论需由其他人重跑确认。
 
 ## 导入实际响应
 
@@ -81,6 +137,15 @@ node scripts/evaluate.mjs --model MODEL_ID --output /tmp/ste-imported.json --imp
 
 | 规则或契约 | 案例 ID | 重点复核 |
 |---|---|---|
+| 术语一致与术语表 | `terminology-consistency`、`glossary-authority`、`distinct-actions-terminology` | 同概念统一；有术语表时以表为准；不同对象不强刚统一 |
+| 条件使用列表 | `condition-list`、`steps-as-list` | 条件分别列出，保留各自强度 |
+| 混合文本类型 | `mixed-text-type` | 步骤与说明分别按各自的句长处理 |
+| STE-flavored 执行面 | `ste-flavored-execution` | 拆分结构并保留事实，词汇统一只作建议 |
+| 名词堆叠与名词化 | `technical-noun-name`、`noun-stack-expansion` | 展开非保护堆叠；固定名称原样保留 |
+| 主动语态正向改写 | `active-voice-known-actor` | 已知 actor 时改为主动语态，对象和先后关系不变 |
+| 简单时态正向改写 | `simple-tense-conversion` | 时间关系不变时改用简单时态 |
+| 无信息引导语删除 | `barrier-phrase-removal` | 删除引导语，事实与频率保留 |
+| 中文分支契约 | `zh-no-op`、`zh-semicolon-split`、`zh-requirement-strength`、`zh-injection`、`zh-paragraph-structure` | 输出语言与原文一致；中文计数口径；要求强度词不互换 |
 | 事实、条件、否定、范围和例外 | `meaning-and-scope`、`condition-and-exception` | 条件只覆盖原有动作；always 和 unless 不丢失 |
 | 数量、单位与时序 | `numbers-and-units` | 数值、单位、上下界及操作顺序保持 |
 | 要求强度 | `requirement-strength` | MUST、SHOULD、MAY 仍对应原动作 |

@@ -88,7 +88,8 @@ const SYNONYM_GROUPS_ZH = [
   ['发送', '传输', '传送'], ['创建', '新建', '生成'],
 ];
 // 要求强度词用于估计一段中的操作要求数量，不判断它们是否真的对应不同操作。
-const ZH_REQUIREMENT_MODAL = /(?:必须|应当|应该|可以|不得|禁止|需要|须|应)/gu;
+// 要求强度词只在完整词形下计数；单字「应」「须」会命中「响应」「应用」「必须」等普通词。
+const ZH_REQUIREMENT_MODAL = /(?:必须|应当|应该|可以|不得|禁止|需要)/gu;
 const ZH_PARAGRAPH_SENTENCE_TARGET = 6;
 
 // 中文规范按汉字与西文词计数；句长上限为项目适配值，与英文词数上限不是换算关系。
@@ -509,9 +510,9 @@ export const RULES_ZH = Object.freeze([
     '按汉字与西文词计数；按 。！？ 及句末闭合引号分句，不实现完整中文语法分析。', checkLongSentences),
   new Rule('zh-dangling-conjunction', 'advisory-free', 'deterministic', '列表项以连接词结尾。请补全该项，或将它与下一项合并。',
     '仅支持普通列表标记和按内容缩进的续行；不检查引用内列表。', checkDanglingConjunction),
-  new Rule('zh-list-required', 'advisory', 'deterministic', '一段中出现三个或更多要求强度词。建议改为列表。',
-    '按要求强度词计数，不判断它们是否真的对应不同操作。', checkListRequired),
-  new Rule('zh-paragraph-topic', 'advisory', 'deterministic', '段落句子数超过目标上限。请考虑分段或合并。',
+  new Rule('zh-list-required', 'advisory', 'heuristic', '一段中出现三个或更多要求强度词。建议改为列表。',
+    '按要求强度词的完整词形计数，不判断它们是否真的对应不同操作；不识别单字「应」「须」。', checkListRequired),
+  new Rule('zh-paragraph-topic', 'advisory', 'heuristic', '段落句子数超过目标上限。请考虑分段或合并。',
     '按 。！？ 计数句子，不判断主题是否真的不同。', checkParagraphTopic),
   regexRule('zh-multi-action', 'advisory', 'heuristic', '一句可能包含多个动作。请考虑每句只保留一个动作。',
     '只匹配有限连接词，不判断多个分句是否真的表示不同动作。', /(?:并且|而且|同时|以及)/u),
@@ -533,7 +534,7 @@ const LANGUAGE_PROFILES = Object.freeze({
   zh: { language: 'zh', limits: TEXT_LIMITS_ZH, rules: RULES_ZH, sentenceEnds: zhSentenceEnds, countTokens: countTokensZh,
     conjunctionEnd: ZH_CONJUNCTION_END, measureNoun: '字', measureMatch: '字' },
 });
-// --disable 按全部语言的规则 ID 并集校验；禁用当前语言未启用的 ID 不会报错。
+// --disable 只接受当前语言启用的规则 ID；禁用另一种语言的 ID 会报错而不是静默忽略。
 const ALL_RULE_CATALOG = ruleCatalog([...new Map(
   [...RULES, ...RULES_ZH].map(rule => [rule.id, rule])).values()]);
 
@@ -668,8 +669,15 @@ function parseArguments(argv) {
     if (incompatible.length) throw new UsageError(`${options.selftest ? '--selftest' : '--list-rules'} 不能与以下参数组合：${incompatible.join(', ')}`);
   }
   options.disabled = new Set(options.disable === null ? [] : options.disable.split(','));
-  const unknown = [...options.disabled].filter(id => !ALL_RULE_CATALOG.has(id)).sort();
-  if (unknown.length) throw new UsageError(`未知规则 ID：${unknown.join(', ')}`);
+  // 按 --disable 生效时实际使用的规则集校验，而不是两种语言的并集。
+  const selectable = ruleCatalog(LANGUAGE_PROFILES[options.language].rules);
+  const unknown = [...options.disabled].filter(id => !selectable.has(id)).sort();
+  if (unknown.length) {
+    const other = options.language === 'en' ? 'zh' : 'en';
+    const cross = unknown.filter(id => ALL_RULE_CATALOG.has(id));
+    const hint = cross.length ? `（${cross.join(', ')} 属于 --language ${other}，请先切换语言）` : '';
+    throw new UsageError(`未知规则 ID：${unknown.join(', ')}${hint}`);
+  }
   return options;
 }
 

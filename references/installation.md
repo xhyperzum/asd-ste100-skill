@@ -8,11 +8,11 @@
 
 | 工具 | 当前入口 | 迁移前入口 |
 |---|---|---|
-| 英文结构检查器 | `scripts/ste-lint.mjs` | `scripts/ste-lint.py` |
+| 结构检查器（en/zh） | `scripts/ste-lint.mjs` | `scripts/ste-lint.py` |
 | 模型行为评测器 | `scripts/evaluate.mjs` | `scripts/evaluate.py` |
 | 安装校验器 | `scripts/check-install.mjs` | `scripts/check-install.py` |
 
-对应回归测试为 `tests/test_ste_lint.mjs`、`tests/test_evaluate.mjs` 和 `tests/test_install.mjs`，替代同名 `.py` 测试；`tests/test_run_tests.mjs` 验证共享 runner。`scripts/run-tests.mjs` 自动排序发现 `tests/test_*.mjs`，新增测试不需要另改 CI 或安装脚本中的文件清单。历史模型评测文件保留原始调用记录和哈希，不将它们改写为新入口或新版技能的运行结果。
+对应回归测试为 `tests/test_ste_lint.mjs`、`tests/test_evaluate.mjs` 和 `tests/test_install.mjs`，替代同名 `.py` 测试；`tests/test_run_tests.mjs` 验证共享 runner，`tests/test_consistency.mjs` 验证跨文件一致性（规则表、版本号、覆盖表、必需资源清单）。`scripts/run-tests.mjs` 自动排序发现 `tests/test_*.mjs`，新增测试不需要另改 CI 或安装脚本中的文件清单；但 `tests/` 下只允许顶层 `test_*.mjs`，子目录、其他 `.js` 或命名不符的 `.mjs` 会被拒绝，而不是静默忽略。历史模型评测文件保留原始调用记录和哈希，不将它们改写为新入口或新版技能的运行结果。
 
 安装校验器会验证必需资源的文件或目录类型、相对 Markdown 链接，以及文本的 UTF-8、无 BOM 和 LF 格式。编码检查涵盖 `.mjs`、Markdown、JSON 与 YAML，包括 `.github/workflows/` 下的 CI 配置；运行缓存和 Git 元数据不参与检查。内部 symlink 的实际内容也检查；外部、断开或循环链接会被拒绝。
 
@@ -30,7 +30,11 @@ node scripts/run-tests.mjs
 node scripts/check-install.mjs
 ```
 
-`--selftest` 只运行检查器回归。全部工具回归使用共享 `run-tests.mjs` 入口，不调用模型。runner 只接受普通 `test_*.mjs` 文件，逐文件检查真实测试事件；空文件、skip、todo、取消或失败均不能视为通过。安装时若省略检查器测试文件，文本检查仍可运行，但 `--selftest` 无法运行；完整安装验证会把必要测试资源缺失视为错误。
+`--selftest` 只运行检查器回归。全部工具回归使用共享 `run-tests.mjs` 入口，不调用模型。runner 只接受普通 `test_*.mjs` 文件，逐文件对账「已排队」与「已完成」的真实测试事件；空文件、子目录、命名不符或扩展名不符的文件（包括 `.js`、`.cjs`、`.mts`、`.cts` 与大小写变体）、skip、todo、取消、提前 `process.exit` 和失败均不能视为通过。完成数少于排队数会直接报错，防止提前退出隐藏未完成的失败测试。
+
+已知边界：该对账只能发现已经进入队列的测试。如果测试在 `process.exit` 之后才通过 `setTimeout` 或顶层 await 注册，它从未进入队列，也就不会被计入。这一残余风险由 `tests/test_run_tests.mjs` 的对应用例固定记录；测试写在仓库内时不构成实际威胁，但审阅外部贡献的测试时需人工留意。
+
+安装时若省略检查器测试文件，文本检查仍可运行，但 `--selftest` 无法运行；完整安装验证会把必要测试资源缺失视为错误。
 
 CLI 与 selftest 每个宿主进程只调用一次 `node:test.run`。Node.js 22.0 的原生 runner 在同一宿主内反复调用时可能累积 process 监听器；嵌入 `runTests` API 时也应每进程执行一次，需要重复运行时使用独立 CLI 子进程。对抗测试中的多种门禁夹具已按进程隔离，不通过提高监听器上限或删除宿主监听器掩盖警告。
 
