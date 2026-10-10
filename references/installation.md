@@ -4,7 +4,7 @@
 
 ## 安装内容与入口迁移
 
-保留技能目录中的完整运行资源，包括 `SKILL.md`、`scripts/`、`evals/`、`references/`、`examples/` 和 `tests/`。当前工具入口为：
+保留技能目录中的完整运行资源，包括 `SKILL.md`、`scripts/`、`evals/`、`references/`、`examples/` 和 `tests/`。`references/` 包含英文与中文两套写作规范；安装校验器要求 `references/chinese-writing-rules.md` 存在。当前工具入口为：
 
 | 工具 | 当前入口 | 迁移前入口 |
 |---|---|---|

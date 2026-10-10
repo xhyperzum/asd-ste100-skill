@@ -2,7 +2,7 @@
 
 将英文工具说明、错误消息、智能体间指令和说明性文字改写得更清楚，保留原文事实、条件、要求强度和英文技术术语。规则受 ASD-STE100 启发；本项目不包含官方批准词典，也不提供 STE 合规认证。
 
-中文文档用于解释使用方法。技能处理英文文本，默认只返回英文改写稿；无需改动时原样返回原文。完整执行规则见 [SKILL.md](SKILL.md)。
+中文文档用于解释使用方法。技能处理英文文本，默认只返回英文改写稿；无需改动时原样返回原文。英文执行规则见 [SKILL.md](SKILL.md)，中文技术文本见[中文简明技术写作规范](references/chinese-writing-rules.md)。
 
 ## 安装
 
@@ -36,6 +36,12 @@ git clone https://github.com/xhyperzum/asd-ste100-skill ~/.claude/skills/asd-ste
 使用 STE-flavored 模式改写这段英文说明，并解释改动。
 ```
 
+中文技术文本改用《中文简明技术写作规范》，改写稿输出中文：
+
+```text
+按中文简明技术写作规范改写这段中文说明，保留技术术语。
+```
+
 默认输出便于直接复制。需要中文分析、模式说明或规则对照时，请明确要求“解释改动”或“显示差异”。
 
 工具与测试统一使用 Node.js 22.0.0 或更高版本，源码仅使用内置模块，无需 Python、第三方 npm 依赖或 package.json。完整回归和安装验证中的 FIFO 夹具还需要 POSIX `mkfifo` 命令，CI 使用 Ubuntu；生产工具不调用该命令。运行文本检查：
@@ -43,6 +49,7 @@ git clone https://github.com/xhyperzum/asd-ste100-skill ~/.claude/skills/asd-ste
 ```bash
 node scripts/ste-lint.mjs --text-type instruction instructions.md
 node scripts/ste-lint.mjs --text-type description --json description.md
+node scripts/ste-lint.mjs --language zh --text-type instruction zh-instructions.md
 node scripts/ste-lint.mjs --list-rules
 ```
 
@@ -66,6 +73,7 @@ node scripts/check-install.mjs
 
 - [SKILL.md](SKILL.md)：模式、保真优先级、执行规则和输出契约。
 - [写作规则背景](references/writing-rules.md)：标准背景、词典与来源。
+- [中文简明技术写作规范](references/chinese-writing-rules.md)：中文计数口径、核心结构规则和检查器对应。
 - [改写示例](examples/before-after.md)和[英文语料](examples/fixtures.json)：对应的解释与可检查输入、输出。
 - [检查器说明](references/linter.md)和[边界样例](examples/linter-edge-cases.md)：能力与已知边界。
 - [安装验证](references/installation.md)：Node.js 版本、入口迁移、必需资源和 CI。

@@ -20,6 +20,7 @@ export const REQUIRED_PATHS = Object.freeze([
   ['references/linter.md', 'file'],
   ['references/evaluation.md', 'file'],
   ['references/installation.md', 'file'],
+  ['references/chinese-writing-rules.md', 'file'],
   ['examples/fixtures.json', 'file'],
   ['tests', 'dir'],
   ['tests/test_install.mjs', 'file'],

@@ -79,6 +79,59 @@ const SYNONYM_GROUPS = [
   ['send', 'transmit'], ['get', 'retrieve', 'fetch', 'obtain'], ['change', 'modify', 'alter'],
 ];
 
+// 中文规范按汉字与西文词计数；句长上限为项目适配值，与英文词数上限不是换算关系。
+const TEXT_LIMITS_ZH = Object.freeze({ instruction: 20, description: 30 });
+const ZH_CONJUNCTION_END = /(?:和|或|以及|并且|或者|同时)\s*$/u;
+const HAN_CHARACTER = /\p{Script=Han}/u;
+const TOKEN_CHARACTER = /[\p{L}\p{N}\p{M}]/u;
+const ZH_TOKEN = /[\p{L}\p{N}\p{M}]/gu;
+const ZH_SENTENCE_TERMINATOR = /[。！？]/u;
+const ZH_SENTENCE_CLOSER = new Set(['”', '’', '」', '』', '）', ')', ']', '】', '》']);
+
+/** 英文按空白切词，返回词数与首词索引。 */
+function countTokensEn(text) {
+  const tokens = [...matches(WORD_TOKEN, text)];
+  return [tokens.length, tokens.length ? tokens[0].index : -1];
+}
+
+/** 中文每个汉字计 1，连续西文或数字串计 1，标点与行内代码不计。 */
+function countTokensZh(text) {
+  let count = 0;
+  let first = -1;
+  for (const match of matches(ZH_TOKEN, text)) {
+    const offset = match.index;
+    const previous = offset > 0 ? text[offset - 1] : '';
+    // 汉字逐个计；西文串只在它不是紧跟在同类字符之后时计 1。
+    if (HAN_CHARACTER.test(match[0])
+      || previous === '' || !TOKEN_CHARACTER.test(previous) || HAN_CHARACTER.test(previous)) {
+      if (first < 0) first = offset;
+      count += 1;
+    }
+  }
+  return [count, first];
+}
+
+/** 英文句边界沿用缩写保护后的 `.`、`!`、`?`。 */
+function enSentenceEnds(text) {
+  return [...matches(SENTENCE_BOUNDARY, text)]
+    // 名称缩写最长 5 个字符；两个末尾字母加点已足以识别点状缩写。
+    // 保留前一个 Unicode 字符的空间，避免截断词边界，同时不反复扫描正文前缀。
+    .filter(match => !ABBREVIATION_END.test(text.slice(Math.max(0, match.index - 8), match.index)))
+    .map(match => match.index + match[0].length);
+}
+
+/** 中文按 `。`、`！`、`？` 分句，并允许句末闭合引号或括号。 */
+function zhSentenceEnds(text) {
+  const ends = [];
+  for (let index = 0; index < text.length; index += 1) {
+    if (!ZH_SENTENCE_TERMINATOR.test(text[index])) continue;
+    let end = index + 1;
+    while (end < text.length && ZH_SENTENCE_CLOSER.has(text[end])) end += 1;
+    ends.push(end);
+  }
+  return ends;
+}
+
 function matches(pattern, text) {
   const global = pattern.flags.includes('g') ? pattern : new RegExp(pattern.source, `${pattern.flags}g`);
   return text.matchAll(global);
@@ -295,18 +348,13 @@ function regexRule(id, level, type, description, limitations, pattern, protectMo
 function* checkLongSentences(context) {
   for (const segment of context.segments) {
     let sentenceStart = 0;
-    const boundaries = [...matches(SENTENCE_BOUNDARY, segment.text)]
-      // 名称缩写最长 5 个字符；两个末尾字母加点已足以识别点状缩写。
-      // 保留前一个 Unicode 字符的空间，避免截断词边界，同时不反复扫描正文前缀。
-      .filter(match => !ABBREVIATION_END.test(segment.text.slice(Math.max(0, match.index - 8), match.index)))
-      .map(match => match.index + match[0].length);
-    for (const sentenceEnd of [...boundaries, segment.text.length]) {
-      const tokens = [...matches(WORD_TOKEN, segment.text.slice(sentenceStart, sentenceEnd))];
-      if (tokens.length > context.maxWords) {
+    for (const sentenceEnd of [...context.sentenceEnds(segment.text), segment.text.length]) {
+      const [tokens, firstIndex] = context.countTokens(segment.text.slice(sentenceStart, sentenceEnd));
+      if (tokens > context.maxWords) {
         yield {
-          position: segment.positions[sentenceStart + tokens[0].index],
-          match: `${tokens.length} words`,
-          message: `句子有 ${tokens.length} 个词（上限 ${context.maxWords}）。请拆分句子。`,
+          position: segment.positions[sentenceStart + Math.max(0, firstIndex)],
+          match: `${tokens} ${context.measureMatch}`,
+          message: `句子有 ${tokens} 个${context.measureNoun}（上限 ${context.maxWords}）。请拆分句子。`,
         };
       }
       sentenceStart = sentenceEnd;
@@ -318,7 +366,7 @@ function* checkDanglingConjunction(context) {
   for (const item of context.items) {
     if (!item.segments.length) continue;
     const last = item.segments.at(-1);
-    const match = CONJUNCTION_END.exec(last.text);
+    const match = context.conjunctionEnd.exec(last.text);
     if (match) {
       const source = last.positions[match.index];
       const position = source[0] === item.markerPosition[0] ? item.markerPosition : source;
@@ -385,22 +433,54 @@ export const RULES = Object.freeze([
   new Rule('synonym-rotation', 'advisory', 'heuristic', '出现了同组的不同动词。请核对它们是否表示同一动作，再决定是否统一。',
     '有限词表只提示用词一致性，不能判断不同对象或动作是否同义。', checkSynonymRotation),
 ]);
-const RULE_CATALOG = ruleCatalog(RULES);
+// 中文规范的核心结构规则；与英文规则并存，由 --language 选择。
+export const RULES_ZH = Object.freeze([
+  regexRule('zh-semicolon', 'advisory-free', 'deterministic', '中文正文含分号。请拆分为多个句子。', '代码内容不参与检查。', /[;；]/u),
+  new Rule('zh-long-sentence', 'advisory-free', 'deterministic', '句子字数超过中文上限。',
+    '按汉字与西文词计数；按 。！？ 及句末闭合引号分句，不实现完整中文语法分析。', checkLongSentences),
+  new Rule('zh-dangling-conjunction', 'advisory-free', 'deterministic', '列表项以连接词结尾。请补全该项，或将它与下一项合并。',
+    '仅支持普通列表标记和按内容缩进的续行；不检查引用内列表。', checkDanglingConjunction),
+  regexRule('zh-multi-action', 'advisory', 'heuristic', '一句可能包含多个动作。请考虑每句只保留一个动作。',
+    '只匹配有限连接词，不判断多个分句是否真的表示不同动作。', /(?:并且|而且|同时|以及)/u),
+  regexRule('zh-nominalization', 'advisory', 'heuristic', '可能将动作名词化。请结合语境考虑使用直接动词。',
+    '只匹配有限动词加双字名词模式，不进行词性分析。', /(?:进行|作出|做出|开展|实施|加以|予以|从事)[\p{Script=Han}]{2}/u),
+  regexRule('zh-marketing-adjective', 'advisory', 'heuristic', '可能是空泛修饰语。请核对该主张是否有原文依据。',
+    '只匹配有限词表，不要求增加数据或删除已有事实。', /(?:赋能|闭环|抓手|无缝|极致|领先|革命性|颠覆性|强大|卓越|业界|生态化|全方位)/u),
+  regexRule('zh-passive', 'advisory', 'heuristic', '可能使用了被动表达。仅在原文提供施事者且改写保留原意时使用主动语态。',
+    '正则无法可靠区分被动结构、名词和固定搭配。', /(?:被|受到|遭到)[\p{Script=Han}]/u),
+  regexRule('zh-barrier-phrase', 'advisory', 'heuristic', '可能是不承载信息的引导语。请核对删除后是否丢失含义。',
+    '只匹配有限词表，不能判断该表达是否承载语气或衔接功能。', /(?:众所周知|不言而喻|值得注意的是|需要指出的是|综上所述|总而言之|简而言之|毋庸置疑|显而易见)/u),
+]);
 
-export function lint(text, filename = '<stdin>', textType = 'description', rules = RULES) {
-  if (!Object.hasOwn(TEXT_LIMITS, textType)) throw new Error('text_type 必须为 instruction 或 description');
-  ruleCatalog(rules);
+const LANGUAGE_PROFILES = Object.freeze({
+  en: { language: 'en', limits: TEXT_LIMITS, rules: RULES, sentenceEnds: enSentenceEnds, countTokens: countTokensEn,
+    conjunctionEnd: CONJUNCTION_END, measureNoun: '词', measureMatch: 'words' },
+  zh: { language: 'zh', limits: TEXT_LIMITS_ZH, rules: RULES_ZH, sentenceEnds: zhSentenceEnds, countTokens: countTokensZh,
+    conjunctionEnd: ZH_CONJUNCTION_END, measureNoun: '字', measureMatch: '字' },
+});
+// --disable 按全部语言的规则 ID 并集校验；禁用当前语言未启用的 ID 不会报错。
+const ALL_RULE_CATALOG = ruleCatalog([...new Map(
+  [...RULES, ...RULES_ZH].map(rule => [rule.id, rule])).values()]);
+
+export function lint(text, filename = '<stdin>', textType = 'description', rules = null, language = 'en') {
+  const profile = LANGUAGE_PROFILES[language];
+  if (!profile) throw new Error('language 必须为 en 或 zh');
+  if (!Object.hasOwn(profile.limits, textType)) throw new Error('text_type 必须为 instruction 或 description');
+  const activeRules = rules === null ? profile.rules : rules;
+  ruleCatalog(activeRules);
   const { segments, items } = segmentsFor(text);
-  const context = { segments, items, maxWords: TEXT_LIMITS[textType] };
+  const context = { segments, items, maxWords: profile.limits[textType],
+    sentenceEnds: profile.sentenceEnds, countTokens: profile.countTokens,
+    conjunctionEnd: profile.conjunctionEnd, measureNoun: profile.measureNoun, measureMatch: profile.measureMatch };
   const findings = [];
-  for (const rule of rules) {
+  for (const rule of activeRules) {
     for (const hit of rule.checker(context)) {
       findings.push({ file: filename, line: hit.position[0], col: hit.position[1], rule: rule.id,
         level: rule.level, match: hit.match, message: hit.message || rule.description });
     }
   }
   findings.sort((left, right) => left.line - right.line || left.col - right.col || (left.rule < right.rule ? -1 : left.rule > right.rule ? 1 : 0));
-  const words = segments.reduce((total, segment) => total + [...matches(WORD_TOKEN, segment.text)].length, 0);
+  const words = segments.reduce((total, segment) => total + profile.countTokens(segment.text)[0], 0);
   return [findings, words];
 }
 
@@ -424,33 +504,33 @@ function roundOneDecimal(value) {
   return Number(integer) / 10;
 }
 
-function report(findings, words, asJson, hardCount, baseline, textType) {
+function report(findings, words, asJson, hardCount, baseline, textType, profile) {
   const rate = words ? roundOneDecimal(findings.length * 100 / words) : 0;
   if (asJson) {
-    console.log(JSON.stringify({ schema_version: SCHEMA_VERSION, text_type: textType,
-      max_words: TEXT_LIMITS[textType], violations: findings, count: findings.length,
+    console.log(JSON.stringify({ schema_version: SCHEMA_VERSION, language: profile.language, text_type: textType,
+      max_words: profile.limits[textType], violations: findings, count: findings.length,
       hard_count: hardCount, baseline: typeof baseline === 'bigint' ? JSON.rawJSON(baseline.toString()) : baseline, words, per_100_words: rate }, null, 2));
     return;
   }
   for (const finding of findings) console.log(`${finding.file}:${finding.line}:${finding.col} ${finding.rule}: ${finding.message} [${finding.match}]`);
-  console.log(`\n共 ${findings.length} 项问题（硬性 ${hardCount} 项，基准值 ${baseline}），${words} 个词，每 100 词 ${rate.toFixed(1)} 项`);
+  console.log(`\n共 ${findings.length} 项问题（硬性 ${hardCount} 项，基准值 ${baseline}），${words} 个${profile.measureNoun}，每 100 ${profile.measureNoun} ${rate.toFixed(1)} 项`);
   console.log('启发式建议需结合语境判断；保留原文的情态、确信程度和时间关系。');
 }
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const ROOT_PATH = resolve(dirname(SCRIPT_PATH), '..');
-const USAGE = '用法：ste-lint.mjs [-h] [--json] [--baseline N] [--disable IDS] [--text-type instruction|description] [--list-rules | --selftest] [FILE ...]';
-const HELP = `${USAGE}\n\n检查 STE 结构规则与启发式建议。未提供文件时从 stdin 读取。需要 Node.js 22 或更高版本。\n\n位置参数\n  FILE                 UTF-8 输入文件\n\n选项\n  -h, --help           显示帮助并退出\n  --json               输出 JSON 报告或规则目录\n  --baseline N         允许的硬性问题数，默认 0\n  --disable IDS        禁用规则 ID，以逗号分隔\n  --text-type TYPE     instruction 上限 20 词；description 上限 25 词（默认）\n  --list-rules         列出规则、等级、类型和限制；仅可与 --json 组合\n  --selftest           运行 Node.js 回归测试；必须单独使用\n  --                   后续参数全部作为文件名\n`;
+const USAGE = '用法：ste-lint.mjs [-h] [--json] [--baseline N] [--disable IDS] [--language en|zh] [--text-type instruction|description] [--list-rules | --selftest] [FILE ...]';
+const HELP = `${USAGE}\n\n检查 STE 结构规则与启发式建议。未提供文件时从 stdin 读取。需要 Node.js 22 或更高版本。\n\n位置参数\n  FILE                 UTF-8 输入文件\n\n选项\n  -h, --help           显示帮助并退出\n  --json               输出 JSON 报告或规则目录\n  --baseline N         允许的硬性问题数，默认 0\n  --disable IDS        禁用规则 ID，以逗号分隔\n  --language LANG      en 使用英文规则（默认）；zh 使用中文规则与字数上限\n  --text-type TYPE     en 为 20/25 词；zh 为 20/30 字\n  --list-rules         列出规则、等级、类型和限制；仅可与 --json 和 --language 组合\n  --selftest           运行 Node.js 回归测试；必须单独使用\n  --                   后续参数全部作为文件名\n`;
 
 class UsageError extends Error {}
 
 function parseArguments(argv) {
   const options = { paths: [], json: false, selftest: false, listRules: false,
-    baseline: 0, disable: null, textType: 'description', help: false };
+    baseline: 0, disable: null, textType: 'description', language: 'en', help: false };
   const provided = new Set();
   let onlyPaths = false;
   const flagNames = new Map([['--json', 'json'], ['--selftest', 'selftest'], ['--list-rules', 'listRules'], ['--help', 'help'], ['-h', 'help']]);
-  const valueNames = new Map([['--baseline', 'baseline'], ['--disable', 'disable'], ['--text-type', 'textType']]);
+  const valueNames = new Map([['--baseline', 'baseline'], ['--disable', 'disable'], ['--text-type', 'textType'], ['--language', 'language']]);
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
     if (onlyPaths || !argument.startsWith('-') || argument === '-') {
@@ -498,18 +578,22 @@ function parseArguments(argv) {
     } else if (name === '--text-type') {
       if (!Object.hasOwn(TEXT_LIMITS, value)) throw new UsageError(`参数 --text-type 无效选项值：${value}（可选值为 instruction、description）`);
       options.textType = value;
+    } else if (name === '--language') {
+      if (!Object.hasOwn(LANGUAGE_PROFILES, value)) throw new UsageError(`参数 --language 无效选项值：${value}（可选值为 en、zh）`);
+      options.language = value;
     } else options.disable = value;
   }
   if (options.help) return options;
   if (options.selftest && options.listRules) throw new UsageError('--selftest 和 --list-rules 不能同时使用');
   if (options.selftest || options.listRules) {
     const incompatible = ['--baseline', '--disable', '--text-type'].filter(name => provided.has(name));
+    if (options.selftest && provided.has('--language')) incompatible.push('--language');
     if (options.paths.length) incompatible.push('FILE');
     if (options.selftest && options.json) incompatible.push('--json');
     if (incompatible.length) throw new UsageError(`${options.selftest ? '--selftest' : '--list-rules'} 不能与以下参数组合：${incompatible.join(', ')}`);
   }
   options.disabled = new Set(options.disable === null ? [] : options.disable.split(','));
-  const unknown = [...options.disabled].filter(id => !RULE_CATALOG.has(id)).sort();
+  const unknown = [...options.disabled].filter(id => !ALL_RULE_CATALOG.has(id)).sort();
   if (unknown.length) throw new UsageError(`未知规则 ID：${unknown.join(', ')}`);
   return options;
 }
@@ -556,9 +640,10 @@ export async function main(argv = process.argv.slice(2), selftestRunner = selfte
       return 0;
     }
     if (options.selftest) return await selftestRunner() ? 0 : 1;
+    const profile = LANGUAGE_PROFILES[options.language];
     if (options.listRules) {
-      if (options.json) console.log(JSON.stringify({ schema_version: SCHEMA_VERSION, rules: RULES.map(rule => rule.metadata()) }, null, 2));
-      else for (const rule of RULES) {
+      if (options.json) console.log(JSON.stringify({ schema_version: SCHEMA_VERSION, language: options.language, rules: profile.rules.map(rule => rule.metadata()) }, null, 2));
+      else for (const rule of profile.rules) {
         console.log(`${rule.id} [${rule.level === 'advisory-free' ? '硬性' : '建议'}，${rule.type === 'deterministic' ? '确定性' : '启发式'}] ${rule.description}\n  限制：${rule.limitations}`);
       }
       return 0;
@@ -568,17 +653,17 @@ export async function main(argv = process.argv.slice(2), selftestRunner = selfte
     try {
       if (options.paths.length) {
         for (const path of options.paths) {
-          const [found, count] = lint(await strictInput(path), path, options.textType);
+          const [found, count] = lint(await strictInput(path), path, options.textType, null, options.language);
           for (const finding of found) findings.push(finding);
           words += count;
         }
-      } else [findings, words] = lint(await strictInput(), '<stdin>', options.textType);
+      } else [findings, words] = lint(await strictInput(), '<stdin>', options.textType, null, options.language);
     } catch (error) {
       throw new UsageError(`无法读取输入：${error.message}`);
     }
     findings = findings.filter(finding => !options.disabled.has(finding.rule));
     const hardCount = findings.filter(finding => finding.level === 'advisory-free').length;
-    report(findings, words, options.json, hardCount, options.baseline, options.textType);
+    report(findings, words, options.json, hardCount, options.baseline, options.textType, profile);
     return Number(hardCount > options.baseline);
   } catch (error) {
     if (!(error instanceof UsageError)) throw error;

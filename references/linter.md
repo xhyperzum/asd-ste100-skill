@@ -1,6 +1,6 @@
 # 检查器：CLI、能力与边界
 
-本文是 `scripts/ste-lint.mjs` 的接口与机械检查能力说明。技能的改写规则以 [SKILL.md](../SKILL.md) 为准。检查器仅依赖 Node.js 22 或更高版本的内置模块，不需要 npm 依赖，不调用模型、外部词典或 NLP 服务。
+本文是 `scripts/ste-lint.mjs` 的接口与机械检查能力说明。英文改写规则以 [SKILL.md](../SKILL.md) 为准，中文改写规则以[中文简明技术写作规范](chinese-writing-rules.md)为准。检查器仅依赖 Node.js 22 或更高版本的内置模块，不需要 npm 依赖，不调用模型、外部词典或 NLP 服务。
 
 ## 输入与 CLI
 
@@ -9,6 +9,8 @@
 ```bash
 node scripts/ste-lint.mjs --text-type instruction instructions.md
 node scripts/ste-lint.mjs --text-type description description.md
+node scripts/ste-lint.mjs --language zh --text-type instruction zh-instructions.md
+node scripts/ste-lint.mjs --language zh --list-rules
 printf '%s\n' 'The job may have failed.' | node scripts/ste-lint.mjs --json
 node scripts/ste-lint.mjs --baseline 5 legacy.md
 node scripts/ste-lint.mjs --disable passive-voice,present-perfect text.md
@@ -22,15 +24,17 @@ node scripts/ste-lint.mjs --selftest
 | `FILE [FILE ...]` | 以 UTF-8 读取一个或多个文件；省略时读取标准输入。 |
 | `--text-type instruction` | 所有输入按指令检查，单句上限为 20 词。 |
 | `--text-type description` | 所有输入按说明检查，单句上限为 25 词；这是默认值。 |
-| `--json` | 输出结构化结果。检查报告包含 `schema_version`（整数 `1`）、`text_type`、`max_words`、`violations`、`count`、`hard_count`、`baseline`、`words` 和 `per_100_words`。 |
+| `--language en` | 使用英文规则与词数上限；这是默认值。 |
+| `--language zh` | 使用中文规则与字数上限（指令 20 字、说明 30 字）。 |
+| `--json` | 输出结构化结果。检查报告包含 `schema_version`（整数 `1`）、`language`、`text_type`、`max_words`、`violations`、`count`、`hard_count`、`baseline`、`words` 和 `per_100_words`。 |
 | `--baseline N` | 允许硬性问题总数不超过非负整数 `N`；默认 `0`。 |
 | `--disable rule1,rule2` | 按规则 ID 禁用检查。规则 ID 以 `--list-rules` 为准；未知 ID 或空项会报参数错误。 |
 | `--list-rules` | 显示规则 ID、等级及能力说明，可与 `--json` 配合。 |
 | `--selftest` | 使用 `node:test` 运行 `tests/test_ste_lint.mjs`，只覆盖 Node 检查器回归。 |
 
-文本类型由调用方选择，检查器不会自动识别指令或推断 Strict 模式。混合文档应拆成不同输入并分别设置类型。
+文本类型由调用方选择，检查器不会自动识别指令或推断 Strict 模式。混合文档应拆成不同输入并分别设置类型。语言同样由调用方用 `--language` 选择，不自动识别；`en` 使用英文规则与词数上限，`zh` 使用中文规则与字数上限。
 
-`--selftest` 必须单独使用；`--list-rules` 仅可与 `--json` 组合。两种操作互斥，都不能携带文件、`--baseline`、`--disable` 或 `--text-type`；即使显式传入默认值也会报错。无效组合返回 `2`，不会忽略选项后继续运行。普通文本检查可以组合这些检查参数。
+`--selftest` 必须单独使用；`--list-rules` 仅可与 `--json` 和 `--language` 组合。两种操作互斥，都不能携带文件、`--baseline`、`--disable` 或 `--text-type`；即使显式传入默认值也会报错。无效组合返回 `2`，不会忽略选项后继续运行。普通文本检查可以组合这些检查参数。
 
 正常检查时，硬性问题总数超过基准返回退出码 `1`，否则返回 `0`。advisory 不增加硬性问题数。参数或输入错误返回退出码 `2`，并提供错误说明。
 
@@ -54,11 +58,26 @@ node scripts/ste-lint.mjs --selftest
 | `present-perfect` | advisory | 正则识别部分复合时态；保护部分情态完成式，如 `may have failed`，不是完整语法分析。 |
 | `synonym-rotation` | advisory | 文件内出现词表中的多个近义词时提示；不能确认它们描述同一概念、对象或动作。 |
 
+`--language zh` 启用下列中文规则。中文规范、计数口径和完整规则见[中文简明技术写作规范](chinese-writing-rules.md)。
+
+| 规则 ID | 等级 | 检查内容与限制 |
+|---|---|---|
+| `zh-semicolon` | 硬性 | 正文含全角 `；` 或半角 `;`；代码区域不参与检查。 |
+| `zh-long-sentence` | 硬性 | 句子字数超过中文上限；按汉字与西文词计数，按 `。！？` 分句，不实现完整中文语法分析。 |
+| `zh-dangling-conjunction` | 硬性 | 受支持列表项末尾的连接词（和、或、以及、并且、或者、同时）；不判断完整句法。 |
+| `zh-multi-action` | advisory | 句内出现并列连接词时提示可能包含多个动作；不判断分句是否真的表示不同动作。 |
+| `zh-nominalization` | advisory | 有限动词加双字名词模式；不进行词性分析。 |
+| `zh-marketing-adjective` | advisory | 内置空泛修饰语词表；不能证明没有依据，也不能要求删除原文程度或虚构数据。 |
+| `zh-passive` | advisory | 正则识别 `被`、`受到`、`遭到` 等被动表达；可能匹配名词或固定搭配。 |
+| `zh-barrier-phrase` | advisory | 内置无信息引导语词表；不能判断该表达是否承载语气或衔接功能。 |
+
 例如 `Start the service. Launch the browser.` 可以触发近义词提示，但两个动作语境不同，不能据此强制改成同一动词。advisory 应结合原文判断，不能通过自动替换直接“修复”。
 
 ## 计数与源位置
 
 正文按空白分隔计算词数，标点不单独计词。排除代码围栏、缩进代码、inline code、列表标记、ATX 标题开头的 `#` 标记、表格分隔行及水平线或 Setext 分隔行。行内代码视为不计词的独立操作数，防止其两侧单词被正则拼接成新的短语。
+
+中文不按空白分词：每个汉字计 1，连续西文或数字串整体计 1，标点与空白不计。行内代码同样不计数。因此 `words` 和 `per_100_words` 在 `--language zh` 下的单位是「字」，与英文词数不可互换。
 
 段落内的软换行合并后检查句长，不能通过将一个长句拆成多个物理行规避阈值。空行与 Markdown 块边界分隔检查单元。普通标题正文和表格正文单元格也参与检查。
 

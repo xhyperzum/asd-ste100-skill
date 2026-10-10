@@ -6,7 +6,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import { Rule, RULES, ruleCatalog, lint, main } from '../scripts/ste-lint.mjs';
+import { Rule, RULES, RULES_ZH, ruleCatalog, lint, main } from '../scripts/ste-lint.mjs';
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const SCRIPT = path.join(ROOT, 'scripts', 'ste-lint.mjs');
@@ -17,7 +17,7 @@ function sentence(count) {
 }
 
 function findingsFor(text, rule, options = {}) {
-  return lint(text, options.filename, options.textType, options.rules)[0]
+  return lint(text, options.filename, options.textType, options.rules, options.language)[0]
     .filter((finding) => finding.rule === rule);
 }
 
@@ -678,4 +678,92 @@ test('CLI：大基准 JSON 保留精确整数，负数和非法下划线拒绝',
     assert.match(result.stderr, /基准值必须为非负整数/);
     assert.doesNotMatch(result.stderr, /Traceback/);
   }
+});
+
+// —— 中文简明技术写作规范 ——
+
+const zhSentence = (count, terminator = '。') => '汉'.repeat(count) + terminator;
+
+test('中文：规则目录包含硬性与建议等级', () => {
+  const [findings] = lint('检查；记录。', '<stdin>', 'description', null, 'zh');
+  const levels = new Map(findings.map(({ rule, level }) => [rule, level]));
+  assert.equal(levels.get('zh-semicolon'), 'advisory-free');
+  const [mixed] = lint('我们进行检查并且这是无缝的极致方案，配置被修改了。众所周知，系统正常。', '<stdin>', 'description', null, 'zh');
+  for (const rule of ['zh-multi-action', 'zh-nominalization', 'zh-marketing-adjective', 'zh-passive', 'zh-barrier-phrase']) {
+    const hit = mixed.find((finding) => finding.rule === rule);
+    assert.ok(hit, `缺少 ${rule}`);
+    assert.equal(hit.level, 'advisory', rule);
+  }
+  assert.ok(RULES_ZH.every((registered) => typeof registered.checker === 'function'));
+  assert.ok(RULES_ZH.every((registered) => registered.id.startsWith('zh-')));
+});
+
+test('中文：句长按字数和文本类型上限', () => {
+  assert.deepEqual(findingsFor(zhSentence(30), 'zh-long-sentence', { language: 'zh' }), []);
+  const long = findingsFor(zhSentence(31), 'zh-long-sentence', { language: 'zh' });
+  assert.equal(long.length, 1);
+  assert.equal(long[0].match, '31 字');
+  assert.deepEqual(findingsFor(zhSentence(20), 'zh-long-sentence', { language: 'zh', textType: 'instruction' }), []);
+  assert.equal(findingsFor(zhSentence(21), 'zh-long-sentence', { language: 'zh', textType: 'instruction' }).length, 1);
+  assert.deepEqual(findingsFor(zhSentence(21), 'zh-long-sentence', { language: 'zh' }), []);
+});
+
+test('中文：汉字、西文词与标点的计数口径', () => {
+  assert.equal(lint('配置 API 后重启。', '<stdin>', 'description', null, 'zh')[1], 6);
+  assert.equal(lint('运行 `npm test` 后。', '<stdin>', 'description', null, 'zh')[1], 3);
+  assert.equal(lint('检查；记录。', '<stdin>', 'description', null, 'zh')[1], 4);
+  assert.equal(lint('𠮷𠮷。', '<stdin>', 'description', null, 'zh')[1], 2);
+});
+
+test('中文：分号和悬空连接词为硬性问题', () => {
+  assert.equal(findingsFor('检查；记录。', 'zh-semicolon', { language: 'zh' })[0].level, 'advisory-free');
+  const dangling = findingsFor('- 配置网络和\n- 记录结果或\n', 'zh-dangling-conjunction', { language: 'zh' });
+  assert.equal(dangling.length, 2);
+  assert.deepEqual([dangling[0].line, dangling[1].line], [1, 2]);
+});
+
+test('中文：连接词并列提示多动作', () => {
+  assert.equal(findingsFor('打开文件并且保存结果。', 'zh-multi-action', { language: 'zh' }).length, 1);
+  assert.deepEqual(findingsFor('打开文件，保存结果。', 'zh-multi-action', { language: 'zh' }), []);
+});
+
+test('中文：代码围栏与行内代码不参与检查', () => {
+  assert.deepEqual(lint('```\n检查；const x = 1;\n```', '<stdin>', 'description', null, 'zh'), [[], 0]);
+  assert.deepEqual(findingsFor('参数 `被包含` 保留。', 'zh-passive', { language: 'zh' }), []);
+  assert.equal(findingsFor('配置被修改，参数 `--force` 保留。', 'zh-passive', { language: 'zh' }).length, 1);
+});
+
+test('CLI：--language zh 选择中文规则与字数上限', () => {
+  const result = runCli(['--language', 'zh', '--json'], '检查；记录。');
+  assert.equal(result.status, 1);
+  const data = JSON.parse(result.stdout);
+  assert.equal(data.language, 'zh');
+  assert.equal(data.max_words, 30);
+  assert.equal(data.hard_count, 1);
+  assert.equal(data.violations[0].rule, 'zh-semicolon');
+  assert.equal(data.words, 4);
+});
+
+test('CLI：--language zh 的规则目录与禁用规则', () => {
+  let catalog = runCli(['--language', 'zh', '--list-rules', '--json']);
+  assert.equal(catalog.status, 0);
+  const data = JSON.parse(catalog.stdout);
+  assert.equal(data.language, 'zh');
+  assert.deepEqual(data.rules, RULES_ZH.map((rule) => rule.metadata()));
+  catalog = runCli(['--language', 'zh', '--json', '--disable', 'zh-passive'], '配置被修改了。');
+  assert.equal(catalog.status, 0);
+  assert.equal(JSON.parse(catalog.stdout).count, 0);
+  assert.equal(runCli(['--language', 'zh', '--disable', 'semicolon'], 'Clear.').status, 0);
+  const unknown = runCli(['--language', 'zh', '--disable', 'nope'], 'Clear.');
+  assert.equal(unknown.status, 2);
+  assert.match(unknown.stderr, /未知规则 ID/);
+});
+
+test('CLI：无效语言和自检携带语言被拒绝', () => {
+  const invalid = runCli(['--language', 'fr'], 'Clear.');
+  assert.equal(invalid.status, 2);
+  assert.match(invalid.stderr, /--language/);
+  const selftest = runCli(['--selftest', '--language', 'zh']);
+  assert.equal(selftest.status, 2);
+  assert.match(selftest.stderr, /不能与以下参数组合/);
 });
