@@ -767,3 +767,27 @@ test('CLI：无效语言和自检携带语言被拒绝', () => {
   assert.equal(selftest.status, 2);
   assert.match(selftest.stderr, /不能与以下参数组合/);
 });
+
+test('中文：列表化提示三个或更多要求', () => {
+  const findings = findingsFor('必须启动服务。应当记录日志。可以重试请求。', 'zh-list-required', { language: 'zh' });
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].match, '3 项要求');
+  assert.equal(findings[0].level, 'advisory');
+  assert.deepEqual(findingsFor('必须启动服务。可以记录日志。', 'zh-list-required', { language: 'zh' }), []);
+});
+
+test('中文：段落主题超过六句时提示分段', () => {
+  const sentences = (count) => Array.from({ length: count }, (_, index) => `第${index + 1}项完成。`).join('');
+  assert.deepEqual(findingsFor(sentences(6), 'zh-paragraph-topic', { language: 'zh' }), []);
+  const findings = findingsFor(sentences(7), 'zh-paragraph-topic', { language: 'zh' });
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].match, '7 句');
+});
+
+test('中文：近义词轮换提示术语一致', () => {
+  const findings = findingsFor('先检查配置，再核查结果。', 'zh-synonym-rotation', { language: 'zh' });
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].match, '核查');
+  assert.deepEqual(findingsFor('先检查配置。', 'zh-synonym-rotation', { language: 'zh' }), []);
+  assert.deepEqual(findingsFor('先检查配置，再 `核查` 结果。', 'zh-synonym-rotation', { language: 'zh' }), []);
+});

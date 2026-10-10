@@ -65,11 +65,14 @@ node scripts/ste-lint.mjs --selftest
 | `zh-semicolon` | 硬性 | 正文含全角 `；` 或半角 `;`；代码区域不参与检查。 |
 | `zh-long-sentence` | 硬性 | 句子字数超过中文上限；按汉字与西文词计数，按 `。！？` 分句，不实现完整中文语法分析。 |
 | `zh-dangling-conjunction` | 硬性 | 受支持列表项末尾的连接词（和、或、以及、并且、或者、同时）；不判断完整句法。 |
+| `zh-list-required` | advisory | 一段中出现三个或更多要求强度词（必须、应当、可以、不得等）时提示改为列表；不判断要求是否真的对应不同操作。 |
+| `zh-paragraph-topic` | advisory | 段落句子数超过 6 句目标时提示分段或合并；按 `。！？` 计数，不判断主题是否真的不同。 |
 | `zh-multi-action` | advisory | 句内出现并列连接词时提示可能包含多个动作；不判断分句是否真的表示不同动作。 |
 | `zh-nominalization` | advisory | 有限动词加双字名词模式；不进行词性分析。 |
 | `zh-marketing-adjective` | advisory | 内置空泛修饰语词表；不能证明没有依据，也不能要求删除原文程度或虚构数据。 |
 | `zh-passive` | advisory | 正则识别 `被`、`受到`、`遭到` 等被动表达；可能匹配名词或固定搭配。 |
 | `zh-barrier-phrase` | advisory | 内置无信息引导语词表；不能判断该表达是否承载语气或衔接功能。 |
+| `zh-synonym-rotation` | advisory | 文件内出现词表中的多个中文近义词时提示；不能确认它们描述同一概念、对象或动作。 |
 
 例如 `Start the service. Launch the browser.` 可以触发近义词提示，但两个动作语境不同，不能据此强制改成同一动词。advisory 应结合原文判断，不能通过自动替换直接“修复”。
 

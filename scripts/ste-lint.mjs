@@ -79,6 +79,18 @@ const SYNONYM_GROUPS = [
   ['send', 'transmit'], ['get', 'retrieve', 'fetch', 'obtain'], ['change', 'modify', 'alter'],
 ];
 
+// 中文术语一致性只提示有限词表内的近义词，不判断不同对象或动作是否同义。
+const SYNONYM_GROUPS_ZH = [
+  ['检查', '核查', '校验'], ['删除', '移除', '清除'],
+  ['启动', '开启', '发起'], ['停止', '终止', '停用'],
+  ['显示', '展示', '呈现'], ['使用', '采用', '利用'],
+  ['修改', '更改', '变更'], ['获取', '读取', '取得'],
+  ['发送', '传输', '传送'], ['创建', '新建', '生成'],
+];
+// 要求强度词用于估计一段中的操作要求数量，不判断它们是否真的对应不同操作。
+const ZH_REQUIREMENT_MODAL = /(?:必须|应当|应该|可以|不得|禁止|需要|须|应)/gu;
+const ZH_PARAGRAPH_SENTENCE_TARGET = 6;
+
 // 中文规范按汉字与西文词计数；句长上限为项目适配值，与英文词数上限不是换算关系。
 const TEXT_LIMITS_ZH = Object.freeze({ instruction: 20, description: 30 });
 const ZH_CONJUNCTION_END = /(?:和|或|以及|并且|或者|同时)\s*$/u;
@@ -404,6 +416,63 @@ function* checkSynonymRotation(context) {
   }
 }
 
+/** 一段中出现三个或更多要求强度词时，提示改为列表。 */
+function* checkListRequired(context) {
+  for (const segment of context.segments) {
+    const hits = [...matches(ZH_REQUIREMENT_MODAL, segment.text)];
+    if (hits.length < 3) continue;
+    yield {
+      position: segment.positions[hits[0].index],
+      match: `${hits.length} 项要求`,
+      message: `一段中有 ${hits.length} 个要求强度词。三个或更多操作要求或条件建议改为列表。`,
+    };
+  }
+}
+
+/** 段落句子数超过目标上限时，提示分段或合并。 */
+function* checkParagraphTopic(context) {
+  for (const segment of context.segments) {
+    let sentences = 0;
+    let start = 0;
+    for (const end of [...context.sentenceEnds(segment.text), segment.text.length]) {
+      if (context.countTokens(segment.text.slice(start, end))[0] > 0) sentences += 1;
+      start = end;
+    }
+    if (sentences > ZH_PARAGRAPH_SENTENCE_TARGET) {
+      yield {
+        position: segment.positions[0],
+        match: `${sentences} 句`,
+        message: `段落有 ${sentences} 句（目标最多 ${ZH_PARAGRAPH_SENTENCE_TARGET} 句）。请考虑分段或合并。`,
+      };
+    }
+  }
+}
+
+/** 中文近义词轮换提示；不判断不同对象或动作是否同义。 */
+function* checkSynonymRotationZh(context) {
+  const seen = new Map();
+  for (const segment of context.segments) {
+    SYNONYM_GROUPS_ZH.forEach((group, groupIndex) => {
+      for (const base of group) {
+        const key = `${groupIndex}:${base}`;
+        if (seen.has(key)) continue;
+        const index = segment.text.indexOf(base);
+        if (index >= 0) seen.set(key, { position: segment.positions[index], match: base, base });
+      }
+    });
+  }
+  for (let groupIndex = 0; groupIndex < SYNONYM_GROUPS_ZH.length; groupIndex += 1) {
+    const present = SYNONYM_GROUPS_ZH[groupIndex].map(base => seen.get(`${groupIndex}:${base}`)).filter(Boolean)
+      .sort((left, right) => comparePositions(left.position, right.position) || (left.base < right.base ? -1 : 1));
+    if (present.length > 1) {
+      const first = present[0].base;
+      for (const { position, match, base } of present.slice(1)) {
+        yield { position, match, message: `出现了 '${base}' 和 '${first}'。请核对是否表示同一概念；不同对象或动作可以使用不同术语。` };
+      }
+    }
+  }
+}
+
 export function ruleCatalog(rules) {
   const catalog = new Map();
   for (const rule of rules) {
@@ -440,6 +509,10 @@ export const RULES_ZH = Object.freeze([
     '按汉字与西文词计数；按 。！？ 及句末闭合引号分句，不实现完整中文语法分析。', checkLongSentences),
   new Rule('zh-dangling-conjunction', 'advisory-free', 'deterministic', '列表项以连接词结尾。请补全该项，或将它与下一项合并。',
     '仅支持普通列表标记和按内容缩进的续行；不检查引用内列表。', checkDanglingConjunction),
+  new Rule('zh-list-required', 'advisory', 'deterministic', '一段中出现三个或更多要求强度词。建议改为列表。',
+    '按要求强度词计数，不判断它们是否真的对应不同操作。', checkListRequired),
+  new Rule('zh-paragraph-topic', 'advisory', 'deterministic', '段落句子数超过目标上限。请考虑分段或合并。',
+    '按 。！？ 计数句子，不判断主题是否真的不同。', checkParagraphTopic),
   regexRule('zh-multi-action', 'advisory', 'heuristic', '一句可能包含多个动作。请考虑每句只保留一个动作。',
     '只匹配有限连接词，不判断多个分句是否真的表示不同动作。', /(?:并且|而且|同时|以及)/u),
   regexRule('zh-nominalization', 'advisory', 'heuristic', '可能将动作名词化。请结合语境考虑使用直接动词。',
@@ -450,6 +523,8 @@ export const RULES_ZH = Object.freeze([
     '正则无法可靠区分被动结构、名词和固定搭配。', /(?:被|受到|遭到)[\p{Script=Han}]/u),
   regexRule('zh-barrier-phrase', 'advisory', 'heuristic', '可能是不承载信息的引导语。请核对删除后是否丢失含义。',
     '只匹配有限词表，不能判断该表达是否承载语气或衔接功能。', /(?:众所周知|不言而喻|值得注意的是|需要指出的是|综上所述|总而言之|简而言之|毋庸置疑|显而易见)/u),
+  new Rule('zh-synonym-rotation', 'advisory', 'heuristic', '出现了可能表示同一概念的多个术语。请核对是否统一。',
+    '有限词表只提示用词一致性，不能判断不同对象或动作是否同义。', checkSynonymRotationZh),
 ]);
 
 const LANGUAGE_PROFILES = Object.freeze({
