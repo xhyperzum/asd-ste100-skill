@@ -1,0 +1,1311 @@
+{
+  "skill_version": "0.1.2",
+  "captured_at": "2026-10-11T08:32:30.799Z",
+  "semantic_approval": "pending-human-review",
+  "runtime": {
+    "node_versions": [
+      "v22.0.0",
+      "v22.23.2"
+    ],
+    "pi_version": "1.1.0",
+    "pi_launcher": {
+      "path": "/home/zone/.local/bin/pi",
+      "realpath": "/home/zone/.pi/agent/bin/pi",
+      "sha256": "da0c6a49fe94aadc9765cc7afc6ba6b17e553eed0247d0385c160bc188f5cfbb"
+    },
+    "adapter_system_prompt": "按照用户消息处理请求。",
+    "isolation": [
+      "--no-extensions",
+      "--no-tools",
+      "--no-mcp",
+      "--no-context-files",
+      "--no-prompt-templates",
+      "--no-skills",
+      "--no-session",
+      "--offline"
+    ],
+    "sampling": "每轮每例一个实际响应；temperature、seed、thinking未显式设置，使用CLI/provider默认；不是重复稳定性检验",
+    "provider_configuration": "不归档认证和私有配置；wokey路由名称不证明供应商内部服务身份"
+  },
+  "rounds": [
+    {
+      "label": "首轮",
+      "report": "evals/results/real-model-2026-10-11-0.1.2.json",
+      "report_sha256": "4cfa2243f4806f8fbf216ac4ee2f6247652fadde040f77b9e1a1e4e46fe15041",
+      "summary": {
+        "cases": 41,
+        "automatic_failed": 0,
+        "operation_errors": 0
+      },
+      "before": {
+        "version": "0.1.2",
+        "created_at": "2026-10-11T08:00:01.976Z",
+        "sha256": {
+          "SKILL.md": "9542a1716ca869048b3fdcd13756567356da74b4c399349919d45e18442504ab",
+          "references/chinese-writing-rules.md": "ae2d74a0d6ebd4ee517bbb26b6975a3f40714f5f8e4078ef0170882911fc93ec",
+          "evals/cases.json": "23018d4f3e95643b8b0ac6debfe9c19ab76e464c848e250d0a971d5e10b8d2b5",
+          "scripts/evaluate.mjs": "0459fded70d0885119bbcc68ba678a54010219d1390d318452ac619140ea88cf",
+          "evals/adapter-pi-example.mjs": "6eb2682674f892628b2caa1636389d8a90ad14f6e5fe365b49f23e23b53acc40"
+        }
+      },
+      "after": {
+        "version": "0.1.2",
+        "created_at": "2026-10-11T08:05:46.825Z",
+        "sha256": {
+          "SKILL.md": "9542a1716ca869048b3fdcd13756567356da74b4c399349919d45e18442504ab",
+          "references/chinese-writing-rules.md": "ae2d74a0d6ebd4ee517bbb26b6975a3f40714f5f8e4078ef0170882911fc93ec",
+          "evals/cases.json": "23018d4f3e95643b8b0ac6debfe9c19ab76e464c848e250d0a971d5e10b8d2b5",
+          "scripts/evaluate.mjs": "0459fded70d0885119bbcc68ba678a54010219d1390d318452ac619140ea88cf",
+          "evals/adapter-pi-example.mjs": "6eb2682674f892628b2caa1636389d8a90ad14f6e5fe365b49f23e23b53acc40"
+        },
+        "identical": true
+      },
+      "inputs_unchanged": true,
+      "execution": {
+        "name": "real-model-0.1.2",
+        "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+        "args": [
+          "scripts/evaluate.mjs",
+          "--model",
+          "wokey/claude-opus-5-5",
+          "--output",
+          "evals/results/real-model-2026-10-11-0.1.2.json",
+          "--timeout",
+          "120",
+          "--command",
+          "/usr/bin/env",
+          "PATH=/home/zone/.local/bin:/usr/local/bin:/usr/bin:/bin",
+          "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+          "evals/adapter-pi-example.mjs",
+          "wokey/claude-opus-5-5"
+        ],
+        "code": 0,
+        "signal": null
+      },
+      "prompt_reconciliation": {
+        "checked": 41,
+        "unique": 41,
+        "passed": true,
+        "results": [
+          {
+            "id": "meaning-and-scope",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "numbers-and-units",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "requirement-strength",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "uncertainty",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "no-op",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "ambiguous-actor",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "source-injection",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "protected-content",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "body-only",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "boundary-spoof",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "ste-flavored-claims",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "analysis-output",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "source-boundary-clarification",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "protected-long-instruction",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "steps-as-list",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "noncausal-timeout",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "condition-and-exception",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "unknown-actor",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "current-time-relevance",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "distinct-actions-terminology",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "paragraph-structure",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "technical-noun-name",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "direct-verbs",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "safety-condition-first",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "zh-no-op",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "zh-semicolon-split",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "zh-requirement-strength",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "zh-injection",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "zh-paragraph-structure",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "active-voice-known-actor",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "noun-stack-expansion",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "barrier-phrase-removal",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "simple-tense-conversion",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "future-restart-tense",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "since-yesterday-continuity",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "unclear-restart-tense",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "terminology-consistency",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "glossary-authority",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "condition-list",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "mixed-text-type",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "ste-flavored-execution",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          }
+        ]
+      },
+      "semantic_approval": "pending-human-review",
+      "all_cases_pending": true
+    },
+    {
+      "label": "第二轮",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round2.json",
+      "report_sha256": "b542536cd96d914425d66be94825678f6f30a36a126a8aeb8e134b04745b673c",
+      "summary": {
+        "cases": 41,
+        "automatic_failed": 1,
+        "operation_errors": 0
+      },
+      "before": {
+        "version": "0.1.2",
+        "created_at": "2026-10-11T08:14:06.210Z",
+        "sha256": {
+          "SKILL.md": "c7894679cd6895a11067336790d52bbe69b80bfb89300027ac7e8e30015adb11",
+          "references/chinese-writing-rules.md": "ae2d74a0d6ebd4ee517bbb26b6975a3f40714f5f8e4078ef0170882911fc93ec",
+          "evals/cases.json": "e3b78bdd123be217d36531691265412dcc8c586be32444260add4366a4533d6d",
+          "scripts/evaluate.mjs": "0459fded70d0885119bbcc68ba678a54010219d1390d318452ac619140ea88cf",
+          "evals/adapter-pi-example.mjs": "6eb2682674f892628b2caa1636389d8a90ad14f6e5fe365b49f23e23b53acc40"
+        }
+      },
+      "after": {
+        "version": "0.1.2",
+        "created_at": "2026-10-11T08:24:09.039Z",
+        "sha256": {
+          "SKILL.md": "c7894679cd6895a11067336790d52bbe69b80bfb89300027ac7e8e30015adb11",
+          "references/chinese-writing-rules.md": "ae2d74a0d6ebd4ee517bbb26b6975a3f40714f5f8e4078ef0170882911fc93ec",
+          "evals/cases.json": "e3b78bdd123be217d36531691265412dcc8c586be32444260add4366a4533d6d",
+          "scripts/evaluate.mjs": "0459fded70d0885119bbcc68ba678a54010219d1390d318452ac619140ea88cf",
+          "evals/adapter-pi-example.mjs": "6eb2682674f892628b2caa1636389d8a90ad14f6e5fe365b49f23e23b53acc40"
+        }
+      },
+      "inputs_unchanged": true,
+      "execution": {
+        "name": "real-model-0.1.2-round2",
+        "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+        "args": [
+          "scripts/evaluate.mjs",
+          "--model",
+          "wokey/claude-opus-5-5",
+          "--output",
+          "evals/results/real-model-2026-10-11-0.1.2-round2.json",
+          "--timeout",
+          "120",
+          "--command",
+          "/usr/bin/env",
+          "PATH=/home/zone/.local/bin:/usr/local/bin:/usr/bin:/bin",
+          "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+          "evals/adapter-pi-example.mjs",
+          "wokey/claude-opus-5-5"
+        ],
+        "code": 1,
+        "signal": null
+      },
+      "prompt_reconciliation": {
+        "checked": 41,
+        "unique": 41,
+        "passed": true,
+        "results": [
+          {
+            "id": "meaning-and-scope",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "numbers-and-units",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "requirement-strength",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "uncertainty",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "no-op",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "ambiguous-actor",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "source-injection",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "protected-content",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "body-only",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "boundary-spoof",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "ste-flavored-claims",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "analysis-output",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "source-boundary-clarification",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "protected-long-instruction",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "steps-as-list",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "noncausal-timeout",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "condition-and-exception",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "unknown-actor",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "current-time-relevance",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "distinct-actions-terminology",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "paragraph-structure",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "technical-noun-name",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "direct-verbs",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "safety-condition-first",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "zh-no-op",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "zh-semicolon-split",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "zh-requirement-strength",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "zh-injection",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "zh-paragraph-structure",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "active-voice-known-actor",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "noun-stack-expansion",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "barrier-phrase-removal",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "simple-tense-conversion",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "future-restart-tense",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "since-yesterday-continuity",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "unclear-restart-tense",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "terminology-consistency",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "glossary-authority",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "condition-list",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "mixed-text-type",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "ste-flavored-execution",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          }
+        ]
+      },
+      "semantic_approval": "pending-human-review",
+      "all_cases_pending": true
+    },
+    {
+      "label": "第三轮",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round3.json",
+      "report_sha256": "c91043f4b91bd58b9f6fc6f4f84d20ea24944ad6badb55a2cd34cea29b61bfb9",
+      "summary": {
+        "cases": 41,
+        "automatic_failed": 0,
+        "operation_errors": 0
+      },
+      "before": {
+        "version": "0.1.2",
+        "created_at": "2026-10-11T08:25:45.989Z",
+        "sha256": {
+          "SKILL.md": "c7894679cd6895a11067336790d52bbe69b80bfb89300027ac7e8e30015adb11",
+          "references/chinese-writing-rules.md": "ae2d74a0d6ebd4ee517bbb26b6975a3f40714f5f8e4078ef0170882911fc93ec",
+          "evals/cases.json": "c362d3840a78912cb94fd26a797996a41af7abe677b39f1a9a165dab317ba686",
+          "scripts/evaluate.mjs": "0459fded70d0885119bbcc68ba678a54010219d1390d318452ac619140ea88cf",
+          "evals/adapter-pi-example.mjs": "6eb2682674f892628b2caa1636389d8a90ad14f6e5fe365b49f23e23b53acc40"
+        }
+      },
+      "after": {
+        "version": "0.1.2",
+        "created_at": "2026-10-11T08:30:45.877Z",
+        "sha256": {
+          "SKILL.md": "c7894679cd6895a11067336790d52bbe69b80bfb89300027ac7e8e30015adb11",
+          "references/chinese-writing-rules.md": "ae2d74a0d6ebd4ee517bbb26b6975a3f40714f5f8e4078ef0170882911fc93ec",
+          "evals/cases.json": "c362d3840a78912cb94fd26a797996a41af7abe677b39f1a9a165dab317ba686",
+          "scripts/evaluate.mjs": "0459fded70d0885119bbcc68ba678a54010219d1390d318452ac619140ea88cf",
+          "evals/adapter-pi-example.mjs": "6eb2682674f892628b2caa1636389d8a90ad14f6e5fe365b49f23e23b53acc40"
+        }
+      },
+      "inputs_unchanged": true,
+      "execution": {
+        "name": "real-model-0.1.2-round3",
+        "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+        "args": [
+          "scripts/evaluate.mjs",
+          "--model",
+          "wokey/claude-opus-5-5",
+          "--output",
+          "evals/results/real-model-2026-10-11-0.1.2-round3.json",
+          "--timeout",
+          "120",
+          "--command",
+          "/usr/bin/env",
+          "PATH=/home/zone/.local/bin:/usr/local/bin:/usr/bin:/bin",
+          "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+          "evals/adapter-pi-example.mjs",
+          "wokey/claude-opus-5-5"
+        ],
+        "code": 0,
+        "signal": null
+      },
+      "prompt_reconciliation": {
+        "checked": 41,
+        "unique": 41,
+        "passed": true,
+        "results": [
+          {
+            "id": "meaning-and-scope",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "numbers-and-units",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "requirement-strength",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "uncertainty",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "no-op",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "ambiguous-actor",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "source-injection",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "protected-content",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "body-only",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "boundary-spoof",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "ste-flavored-claims",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "analysis-output",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "source-boundary-clarification",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "protected-long-instruction",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "steps-as-list",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "noncausal-timeout",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "condition-and-exception",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "unknown-actor",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "current-time-relevance",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "distinct-actions-terminology",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "paragraph-structure",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "technical-noun-name",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "direct-verbs",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "safety-condition-first",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "zh-no-op",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "zh-semicolon-split",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "zh-requirement-strength",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "zh-injection",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "zh-paragraph-structure",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "active-voice-known-actor",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "noun-stack-expansion",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "barrier-phrase-removal",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "simple-tense-conversion",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "future-restart-tense",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "since-yesterday-continuity",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "unclear-restart-tense",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "terminology-consistency",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "glossary-authority",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "condition-list",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "mixed-text-type",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          },
+          {
+            "id": "ste-flavored-execution",
+            "case": true,
+            "skill": true,
+            "prompt": true,
+            "submitted": true,
+            "references": true
+          }
+        ]
+      },
+      "semantic_approval": "pending-human-review",
+      "all_cases_pending": true
+    }
+  ],
+  "validation": {
+    "scope": "最终代码和目前已存在归档；后续新增交付说明另行验证",
+    "regression_tests": 297,
+    "linter_selftests": 96,
+    "receipts": [
+      {
+        "name": "latest-22.0-回归",
+        "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+        "args": [
+          "scripts/run-tests.mjs"
+        ],
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "latest-22.0-安装",
+        "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+        "args": [
+          "scripts/check-install.mjs"
+        ],
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "latest-22.0-编码",
+        "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+        "args": [
+          "scripts/check-install.mjs",
+          "--check-text-files"
+        ],
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "latest-22.0-自测",
+        "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+        "args": [
+          "scripts/ste-lint.mjs",
+          "--selftest"
+        ],
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "latest-22.23-回归",
+        "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+        "args": [
+          "scripts/run-tests.mjs"
+        ],
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "latest-22.23-安装",
+        "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+        "args": [
+          "scripts/check-install.mjs"
+        ],
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "latest-22.23-编码",
+        "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+        "args": [
+          "scripts/check-install.mjs",
+          "--check-text-files"
+        ],
+        "code": 0,
+        "signal": null
+      },
+      {
+        "name": "latest-22.23-自测",
+        "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+        "args": [
+          "scripts/ste-lint.mjs",
+          "--selftest"
+        ],
+        "code": 0,
+        "signal": null
+      }
+    ],
+    "prior_validation_failures": [
+      {
+        "name": "final-22.0-回归.json",
+        "cause": "共享规则措辞更新后consistency旧字面断言失败；修断言而未删约束；后续latest八项已通过",
+        "code": 1
+      },
+      {
+        "name": "final-22.0-安装.json",
+        "cause": "共享规则措辞更新后consistency旧字面断言失败；修断言而未删约束；后续latest八项已通过",
+        "code": 1
+      },
+      {
+        "name": "final-22.23-回归.json",
+        "cause": "共享规则措辞更新后consistency旧字面断言失败；修断言而未删约束；后续latest八项已通过",
+        "code": 1
+      },
+      {
+        "name": "final-22.23-安装.json",
+        "cause": "共享规则措辞更新后consistency旧字面断言失败；修断言而未删约束；后续latest八项已通过",
+        "code": 1
+      }
+    ]
+  }
+}

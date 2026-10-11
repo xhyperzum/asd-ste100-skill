@@ -1,0 +1,830 @@
+{
+  "captured_at": "2026-10-11T08:53:25.347Z",
+  "skill_version": "0.1.2",
+  "scope": "第四轮冻结工具与技能，未声称后续评测器性能修复已在本轮完整实跑",
+  "semantic_approval": "pending-human-review",
+  "selected": [
+    {
+      "case_id": "meaning-and-scope",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "aaf4402a87a50336e1b423822f465f1a0e9694a0e2132a849c29e95a731e4b6e",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "4d4f6874cbaeb9e400a2618755c926c46250a74c937790c994035425d760ee1f",
+      "response_sha256": "3c3861190c14719888445360e40b17a9d2217e2b47c812c67006c8daf2422530",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "numbers-and-units",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "332dc3da8ae62db286139d37b1f945faf36ac3e95344591abb706b5959fb0e34",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "a13e65facc9ddf082254c8fd53962ff8a3124eeea5ce1cb05724a3172b73dbf1",
+      "response_sha256": "998f583cf654e63afdc965d7e4afa91774773dde7c00dd2dca24791dc68a8e10",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "requirement-strength",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "4a477e6e56359533a3f76d6f61cf95443fc3d0bbeca6a7105235dc61a2bdcaab",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "e19eed9e933d78b942cfd15f2a3c4ac7d64d5088ef2ae16fe083a50d8cafe77d",
+      "response_sha256": "e9bdb769f6708e7b1bb123b9407dcbc8d4bc5aa68afd95cdd42b6c5c18789802",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "uncertainty",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "cb8b288a34c7761fb9523a5c09c316060aa8aa9ac2b5a20eb1120522166953ba",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "a342fbeffa51022e00dc2aa590d406edee836d2ba4184bebe515ac7533c200ea",
+      "response_sha256": "933bb9024f881942eee84974f96b67de45bd6e3b126e16a25358cb03130c3a87",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "no-op",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "20b685f4d093a465ec368483e05a0dabf1692092bcfc9f886e7c8652561ef817",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "d4d233ce9679968e8bf3a859a337a9b24dccbabbffac32fdb0cfcba2c94be1d9",
+      "response_sha256": "040760143a6f1b83ccfca11e5bb2aa67e8f157c01e1329101c1490fd45446a52",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "ambiguous-actor",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "90c896f65a6f68701ae1509cb768f47a0e73fc295a7eac551c2a49d2994b64ce",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "1619d16856263971eb4ffc6b45da7a8d485a7dc5fb11f0891d2bdb7af243c30c",
+      "response_sha256": "61ada0c007ea4075aef1fe1e812de215ffc7857c20a3038fdb690d82825fd07e",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "source-injection",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "73593006114af9877ec141678afd8e3179d090d242bdfbd477dfa93a3c867e3e",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "6bfadde4d0153878c68bc3a298288f55f945656f653922a9f5762ba77e05c39d",
+      "response_sha256": "5035efc99037735b6c755d092cd48287e4b3e981a145a9c5aeaf91346a0ba6d0",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "protected-content",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "f9b557673cbc130740c33b8bedba553b6382ee4d3fe7851ea12596cee14f347a",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "b98b526661dff3ff6181d395435a10ae34516d47c033c0ad9cd77726e981b716",
+      "response_sha256": "5b99a9e2204249981a7d7a0ac0651abd9a3e4110d6c9e4cd79efcb04af300a78",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "body-only",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "4a93cdcfeee57152712e56f3784644c6051691e7dba166fc0bcbef70c05639d4",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "abe27042ef81e11f673b0ad06173b43ad522d12cbb41ea49bc4af61cabd493ea",
+      "response_sha256": "32df9ecf38fab9040c3f6c68c60326cf7986f926d1613efe0ff2a5000946c2ec",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "boundary-spoof",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "298f1626721070afd8b8c7937ef58d9655d35450a4b2df4c02b340760af16fad",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "f0603396b54ce46bc4ac4bc16a060e6baeb5834b6d4ce1ac4fc85cdb4ed38c08",
+      "response_sha256": "a8b736ba09a39537d617826ac506fd2fe87b2edbbb201db2fea975f0691cc347",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "ste-flavored-claims",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "14dff8494220e310dfcc49a70e2f0c1d4b3543fe0ff5c83c3db5681ef2cff15d",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "7bebbb3bac79d5be82f86abfdc10ae5ef302e2d12c9e99fbad2eca1695455b2f",
+      "response_sha256": "a4ba4565f15ebc06ec38894c6f40e50037132d63df9c7db417c1732c5234e76e",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "analysis-output",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "ab20a1296f4ec7a67d1f159637decdf82749f7e25bb27b81ce5c166f4cf4098f",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "e0502b484a2d14596ffcd7bafa28442c7e626d4b2674f6af0441850acdca1b05",
+      "response_sha256": "05527e3cc9e088c09baa92f7af6a818da6fdebe8bfcdf81636ec498443831c07",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "source-boundary-clarification",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "01221f3628e9dcd03f4e0a69823923efc46df84ed1a761742f9f23f83c704d9f",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "383ea5f38ee29ad846fc3e4a7e566d5d9bc7459e8594e47f0c1a9d7422b7406e",
+      "response_sha256": "4678c8bc1dd770b5c149342966f601be4eee566a6df3e101812f0662c2b8168f",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "protected-long-instruction",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "261360cbaddadd4393164b41a06f35f38951ed28dd561987a8cec9b9d22b95fe",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "9d762748d845a024c36a5315163572e0f4cbd846cb46d18185fe40f482204c7d",
+      "response_sha256": "5f2674239d4955c39cee21a768a6860e95f898fdbe6bd456939b7c8f82cc32ae",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "steps-as-list",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "5b67f6f7426036013a2ac04799cbe115f31390ce238e4f9793ac2da1d22b06fd",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "5bde9fb193242a1aba45f1fe1d7c993ee1588126478494aa251f040fca27bf33",
+      "response_sha256": "65bb0147c86ccd1e3a81b085a51f5b494a0ea8443538d4d40ec34ace0df44909",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "noncausal-timeout",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "8f4b412773a5453cfaa4ecaa3037f60bba79eb357b0b1d18f1ee5353e30a7f9d",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "a5a703f103d76baef366fad497a6bf475ac8dd71dd8d13dfe1b299401f778d92",
+      "response_sha256": "9e2380b8418a85b9e01430b069217281871c2d9b1eb7c61e84434ce091cea326",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "condition-and-exception",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "7cc02ec0785b38636d5b6d51e406f3ee6ba3a4e1a6d5b4c58c79cf6ed62b6a03",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "abfbf0bf5fa539c35302b28f7dd20b1a26eba19f63c321d4120d4b8e5f9a79ea",
+      "response_sha256": "e7365d2ca0573ce369401e18da09f5c2bcc37a21435d18ba06e1da2426a840d1",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "unknown-actor",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "7c970120426ab5dc9b4d646cb9a6039309b807bb62790157f3f64669b2d3fb53",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "3293191a5b947a953fceded64ab39d26d4e9ad9dcc37b4f8a9c33dfbe4323b3c",
+      "response_sha256": "5cf972defa5635d4986ab49390f567ccef6f33928fb6f973d2647ac5236562c7",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "current-time-relevance",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "70bd6575a23ff682201e00b43b5b5ea5b82891d8acaacd04120e648f3fad9c5d",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "cef0d3f9cb904980647ecf3ce9303d37f1f4b5d4f8002b6f9030409655fa08a7",
+      "response_sha256": "3d0e473c7034d9f100a299ed088891b310ee2b7d4104cf8552a695de7378abba",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "distinct-actions-terminology",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "3d0a4b3cf8639d5efa2a2f6d612c96af2ea11fe0e0e7ce01575a291b013fee43",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "ae1e763f508ab8b23ecf748eb416d60be0cb5ad11d2918f07d515cec4d1f5994",
+      "response_sha256": "64b3327d99de6ee75716226ab647edbf4055edad99cf1f9f5f1dbca52c9ca969",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "paragraph-structure",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "90f667417653d0b8a8c8d35291a93387d608cb881d8be3442529a5691eb18df0",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "7e053fcd2c455b875cf03647bca87de8d4a55fa225f0d5abfb1562a058a732c0",
+      "response_sha256": "52cec845614a01eef9505df1a63943577f5026a7ea87b20c498eadf532c04535",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "technical-noun-name",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "8dc124a2be1f1e2439734804c8be82e4228ebe46265fdc8531ab14cda1835a41",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "d9a3f0a719563cb34b5259a559cb2ad0ca22849dd32f312fabe53e3bf7b78633",
+      "response_sha256": "d25129007acb3442c4d4958b332dcea7ad145a003d365d27cbf15d80619dc6b6",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "direct-verbs",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "016f0b79f316a691297a0de6c0aef5acd62f492a1ecfdede6fb5ce80b13004af",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "dbc042ee979f95601aecd1906749ddef184fcacb789da4865b702b72b1dee37f",
+      "response_sha256": "ed9b111ef8a9180d8f125412ec8f904013889a79c5158d5f76e85dcf30e5dad4",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "safety-condition-first",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "69121376c5c506b21b1cb1357aca382fce0598c2b20adb84a427e4316d1b9eb2",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "46639dbc8fcc1aa3d1978dc2d8185621960cdad2348014f6eb0763f00562cf8f",
+      "response_sha256": "9830a8ae053dd3c1b96c5b212e8abe1abed077299928e5b71799ae85cc4df7ff",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "zh-no-op",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "799eb383344b73dc464ea0610b7396317a205cee4311ab3d1073da845ae06cae",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "4b61827cde77bbb10944450ced29544487dffd35e30b02ad2bb8f327fdff17de",
+      "response_sha256": "537e421f6dc66529f4a8c1d13631c0663863b0939d516f481dcd071e83aa5b8a",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "zh-semicolon-split",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "1c5d00ffc3747d54ce1876c9b1524cf015e6cf0472d6ae93dd51dbc935a8fbaa",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "a22c7234077fa9373a60a5c988b5cef3b9e3e00f8c84e7ac118008a99ed71369",
+      "response_sha256": "c3ea6e92bdaef4dffbf88d338fc77e6fe73b9d132f796bde4a06d53534b68c33",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "zh-requirement-strength",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "e4186b86571fb5601cd14d4cdcdf76a07e4c31988e18818f0a497cf5a3b28ca9",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "734a9660e415c5386296fc322de9e1dc27f8d7cf922fce71736b8ad86a537f75",
+      "response_sha256": "26a7433433f550f6c05e4b934be5f019696b542b914f0e0818bf9af3c3052da7",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "zh-injection",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "f5dc5b564c4a32e79520478a7f897862d344d7babc0e431a28a2d1b8b17b62f6",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "dee105bb2e6f5f844a06939b923b672d933b9cb14b29c9619206758d42fcdb4f",
+      "response_sha256": "1a495593a00fb729ad71ff970980f92c438a5430669252e8094ac1ac41bd4287",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "zh-paragraph-structure",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "3151d985872716dbbb5091d327a7f6855e48ba0b2b325675cd685b870d04b79e",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "4b1c750087f4b9953fa4aa8f43a305c42d7b750a1334dc5d7d4e08e995741b7a",
+      "response_sha256": "7ee4bf6f233cc6cf0e764823423f98b74818a3d5716950f59304e9b752b37692",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "active-voice-known-actor",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "673d4cb37d3e360a20f1f04173d485735396ace67fcded48fa369adfe1600c19",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "98fffd6a35e9a2ac6ff8f34b44e9c6bf5917513acdd753b663f9e5c33f910232",
+      "response_sha256": "bf42aea094af6da8704ef6d56825617acc924aa4bc359f40d4abdbe4d53bbbe7",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "noun-stack-expansion",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "8a09dace14b00c7023ca65986929e0bb61afe013b93989a543ff9e50838c5098",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "46eae56a921f81d3960e1997b8c3acc628a1eb14ba6427631834fe8175a673a8",
+      "response_sha256": "086c12c7d193da9f9621a750c928ae7e331cfad8c4366a1993282429a26c0123",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "barrier-phrase-removal",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "ff274ec2e7d1ea581c75229ccfc6120b0aae9b8d8b431ab63fac25841129f075",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "5efa57cab4073acf635ea39503e9d8e2dc38f828510052e0be9fb9482aab9657",
+      "response_sha256": "604538a8016aebc0cd32c426178c0e28807e159e8bd561147c04d67ff95a9b1c",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "simple-tense-conversion",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "53401a8d9b73790ab1a6baec916a36cb2fd545eb9a40bb0c10d22fcfe228986d",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "e5c1a5ff48c2081ebf1b5c5218ed41dd35092ce3436a1173b4549c6d0b9a67ae",
+      "response_sha256": "55d69e41c444649801cc20e1f310b28dfb32c720ff892bc2a6ea2d002c0a726e",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "future-restart-tense",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "85aba59c3fdc9b64e6640460527bf91232d8413993d9aa1974b876e4cfb9d457",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "9662e8a52f32bd3b7a1838c7c4f8fbdf0fa4c28395534ba5c983c50d27ba8406",
+      "response_sha256": "f0a789af0231e440580fcfff3954db1ee88d7ff84a662894d86e80be63ad6ade",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "since-yesterday-continuity",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "0557b1144bce300da57a775c570d45c50f63b6b91bb15a719321efd78dcc97d0",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "a3ae014d13c8c95da8aa90cdecc91c5fc2cd50e51bcafc1723446a06d26ca7d4",
+      "response_sha256": "25dd9d1704c5e0ed6d90d56cd3a8522b2e3b7e9a6ed194c7158218caef2007bc",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "unclear-restart-tense",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "18101f9f9d9c6eabbcbfc82a30931eb8d522ca43145bfb5447cd5db59b14a176",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "db3ed7c7634a19b1e11ad7e0371f57a5209d584158dbd41b8be6ff8aace152d6",
+      "response_sha256": "8c5ea1662ba1e7278d9f766d3c66185451463cabb143e001019346a1369e8661",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "terminology-consistency",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "aad2f8c5fa5f7649b05d0d1520cd636c90e7543d58e34e93e07dbe6119b8c2c8",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "2b5f1d22df393923f15c81ff3fa3be432ea34f7e2034bcd826b223daef7d354a",
+      "response_sha256": "abcf4129cd3da47735ac79361b9edb1a0a07dfff0997bd1bb43b6580803707a0",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "condition-list",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "7e45b6b6e97000858c67497540d0baf4bc3bd38e0c5ead10bc4afb9e82625cc3",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "e9a475058f49f78905def1def894cdcbdab311c820c2d99143306475a9ed5312",
+      "response_sha256": "a86348202bb320020cb74616d91e3b994dfb504f52e2e0e945d59df720c60a49",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "mixed-text-type",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "7410919b3a80d245dd512c73c518064d7b2d2fae52b9c35fa04964f2c4f8b969",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "1b15224629a77d919eb45f787edf7b3fa3146c6b07b5625da9cdc8c5be402886",
+      "response_sha256": "1de0fa2ee128bd0f3243daa4aa05d4db8baa81a1ad1c1b38d1db67d3c3dfe2c0",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "ste-flavored-execution",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "case_sha256": "c27df1ab25f1a806ec16d7b4064e4c02798ecf0fcccaf476106489ccada5fa12",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "8dda58da50a0184920e8a834e87faaaee3404061b637db275e170dfcb15e1a76",
+      "response_sha256": "d769a2b551ca367be763cf2251d59fdcb6ba745e872739dbea69db70deb6714d",
+      "automatic_passed": true
+    },
+    {
+      "case_id": "glossary-authority",
+      "report": "evals/results/real-model-2026-10-11-0.1.2-round4-retry.json",
+      "case_sha256": "5aac11e2b0014fbcd2d3833cf75853615610c158bdb504f3c1c314e2ab7c02a6",
+      "skill_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "prompt_sha256": "2d6d4df2d6138a14e675550508bdd25738df62a43060898eab9b7baaa16f0544",
+      "response_sha256": "41804eb204c35cb2424c7cfa7ccd701ffcfaf0ac84c771b884cc8e1b4de1fc29",
+      "automatic_passed": true
+    }
+  ],
+  "reports": [
+    {
+      "label": "第四轮全量",
+      "path": "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+      "sha256": "016152bd542495633525b3ff6ba7b746eb0da31991cdbbd761a24f20a846c6e1",
+      "summary": {
+        "cases": 41,
+        "automatic_failed": 1,
+        "operation_errors": 1
+      },
+      "before": {
+        "version": "0.1.2",
+        "created_at": "2026-10-11T08:42:31.021Z",
+        "sha256": {
+          "SKILL.md": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+          "references/chinese-writing-rules.md": "ae2d74a0d6ebd4ee517bbb26b6975a3f40714f5f8e4078ef0170882911fc93ec",
+          "evals/cases.json": "270e2646a102322a740eb2a2f00a7b8ec198d6732e2bfff519892fa954048e2e",
+          "scripts/evaluate.mjs": "0459fded70d0885119bbcc68ba678a54010219d1390d318452ac619140ea88cf",
+          "evals/adapter-pi-example.mjs": "6eb2682674f892628b2caa1636389d8a90ad14f6e5fe365b49f23e23b53acc40"
+        }
+      },
+      "after": {
+        "version": "0.1.2",
+        "created_at": "2026-10-11T08:49:17.601Z",
+        "sha256": {
+          "SKILL.md": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+          "references/chinese-writing-rules.md": "ae2d74a0d6ebd4ee517bbb26b6975a3f40714f5f8e4078ef0170882911fc93ec",
+          "evals/cases.json": "270e2646a102322a740eb2a2f00a7b8ec198d6732e2bfff519892fa954048e2e",
+          "scripts/evaluate.mjs": "0459fded70d0885119bbcc68ba678a54010219d1390d318452ac619140ea88cf",
+          "evals/adapter-pi-example.mjs": "6eb2682674f892628b2caa1636389d8a90ad14f6e5fe365b49f23e23b53acc40"
+        }
+      },
+      "inputs_unchanged": true,
+      "execution": {
+        "name": "real-model-0.1.2-round4",
+        "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+        "args": [
+          "scripts/evaluate.mjs",
+          "--model",
+          "wokey/claude-opus-5-5",
+          "--output",
+          "evals/results/real-model-2026-10-11-0.1.2-round4.json",
+          "--timeout",
+          "120",
+          "--command",
+          "/usr/bin/env",
+          "PATH=/home/zone/.local/bin:/usr/local/bin:/usr/bin:/bin",
+          "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+          "evals/adapter-pi-example.mjs",
+          "wokey/claude-opus-5-5"
+        ],
+        "code": 2,
+        "signal": null
+      }
+    },
+    {
+      "label": "连接失败唯一真实重试",
+      "path": "evals/results/real-model-2026-10-11-0.1.2-round4-retry.json",
+      "sha256": "2ccd77ce2c52faba49a5f3bcb1fa2f560374ccb9d5874e19e6bfc202fa748eab",
+      "summary": {
+        "cases": 1,
+        "automatic_failed": 0,
+        "operation_errors": 0
+      },
+      "before": {
+        "version": "0.1.2",
+        "created_at": "2026-10-11T08:50:00.293Z",
+        "sha256": {
+          "SKILL.md": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+          "references/chinese-writing-rules.md": "ae2d74a0d6ebd4ee517bbb26b6975a3f40714f5f8e4078ef0170882911fc93ec",
+          "evals/cases.json": "270e2646a102322a740eb2a2f00a7b8ec198d6732e2bfff519892fa954048e2e",
+          "scripts/evaluate.mjs": "0459fded70d0885119bbcc68ba678a54010219d1390d318452ac619140ea88cf",
+          "evals/adapter-pi-example.mjs": "6eb2682674f892628b2caa1636389d8a90ad14f6e5fe365b49f23e23b53acc40"
+        }
+      },
+      "after": {
+        "version": "0.1.2",
+        "created_at": "2026-10-11T08:50:52.611Z",
+        "sha256": {
+          "SKILL.md": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+          "references/chinese-writing-rules.md": "ae2d74a0d6ebd4ee517bbb26b6975a3f40714f5f8e4078ef0170882911fc93ec",
+          "evals/cases.json": "270e2646a102322a740eb2a2f00a7b8ec198d6732e2bfff519892fa954048e2e",
+          "scripts/evaluate.mjs": "0459fded70d0885119bbcc68ba678a54010219d1390d318452ac619140ea88cf",
+          "evals/adapter-pi-example.mjs": "6eb2682674f892628b2caa1636389d8a90ad14f6e5fe365b49f23e23b53acc40"
+        }
+      },
+      "inputs_unchanged": true,
+      "execution": {
+        "name": "real-model-0.1.2-round4-retry",
+        "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+        "args": [
+          "scripts/evaluate.mjs",
+          "--model",
+          "wokey/claude-opus-5-5",
+          "--output",
+          "evals/results/real-model-2026-10-11-0.1.2-round4-retry.json",
+          "--case",
+          "glossary-authority",
+          "--timeout",
+          "120",
+          "--command",
+          "/usr/bin/env",
+          "PATH=/home/zone/.local/bin:/usr/local/bin:/usr/bin:/bin",
+          "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+          "evals/adapter-pi-example.mjs",
+          "wokey/claude-opus-5-5"
+        ],
+        "code": 0,
+        "signal": null
+      }
+    }
+  ],
+  "selection_summary": {
+    "attempted_cases": 42,
+    "successful_unique_cases": 41,
+    "selected_auto_passed": 41,
+    "operation_errors_retained": 1
+  },
+  "prompt_reconciliation": {
+    "checked": 41,
+    "unique": 41,
+    "passed": true,
+    "results": [
+      {
+        "id": "meaning-and-scope",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "numbers-and-units",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "requirement-strength",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "uncertainty",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "no-op",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "ambiguous-actor",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "source-injection",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "protected-content",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "body-only",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "boundary-spoof",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "ste-flavored-claims",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "analysis-output",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "source-boundary-clarification",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "protected-long-instruction",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "steps-as-list",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "noncausal-timeout",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "condition-and-exception",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "unknown-actor",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "current-time-relevance",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "distinct-actions-terminology",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "paragraph-structure",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "technical-noun-name",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "direct-verbs",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "safety-condition-first",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "zh-no-op",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "zh-semicolon-split",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "zh-requirement-strength",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "zh-injection",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "zh-paragraph-structure",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "active-voice-known-actor",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "noun-stack-expansion",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "barrier-phrase-removal",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "simple-tense-conversion",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "future-restart-tense",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "since-yesterday-continuity",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "unclear-restart-tense",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "terminology-consistency",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "glossary-authority",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "condition-list",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "mixed-text-type",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      },
+      {
+        "id": "ste-flavored-execution",
+        "case": true,
+        "skill": true,
+        "prompt": true,
+        "submitted": true,
+        "references": true
+      }
+    ]
+  }
+}

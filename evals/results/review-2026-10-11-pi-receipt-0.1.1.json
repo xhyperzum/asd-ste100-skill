@@ -1,0 +1,28 @@
+{
+  "pi_version": "1.1.0",
+  "review": {
+    "provider_models": [
+      "wokey/claude-opus-5-5"
+    ],
+    "code": 0,
+    "started": "2026-10-11T07:15:33.488Z",
+    "ended": "2026-10-11T07:17:38.483Z",
+    "jsonl_sha256": "8d8d7bb42eca66b6d4da6e8467663e2ee97d1a0a8456e95e1929c178c88209a3",
+    "report": "evals/results/review-2026-10-11-pi-0.1.1.md",
+    "operational_event_log": "pi-0.1.1-final.jsonl",
+    "tool_calls": 0,
+    "role": "独立代理审查，不是人类审批"
+  },
+  "semantic_approval": "pending-human-review",
+  "source_reports": [
+    {
+      "path": "evals/results/real-model-2026-10-11-release.json",
+      "sha256": "da3598b8530ea52cb066605f8f761e9688282f71efbb20d5cc642141e31c3ee4"
+    },
+    {
+      "path": "evals/results/real-model-2026-10-11-release-retry.json",
+      "sha256": "0c16d80ff5ee546013b94cd5cd2cac96e8fcb907f84a3c53523c60931843d183"
+    }
+  ],
+  "role_note": "审查调用不计入42次被测模型调用。"
+}

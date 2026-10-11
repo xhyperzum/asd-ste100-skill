@@ -1,0 +1,127 @@
+{
+  "recorded_at": "2026-10-11T06:54:59.823Z",
+  "semantic_approval": "pending-human-review",
+  "input_snapshot": {
+    "captured_at": "2026-10-11T06:49:53.071Z",
+    "phase": "最终完整真实模型运行开始前",
+    "model": "wokey/claude-opus-5-5",
+    "pi_version": "1.1.0",
+    "node_version": "v22.23.2",
+    "adapter_system_prompt": "按照用户消息处理请求。",
+    "sampling": {
+      "temperature": "未显式设置，使用CLI/provider默认值",
+      "seed": "未显式设置"
+    },
+    "files": [
+      {
+        "path": "SKILL.md",
+        "sha256": "2e0d39e8fbc9d8c55d1fbf0cb57426ab7fd2054a62c5a34cf4960f3156a14093"
+      },
+      {
+        "path": "references/chinese-writing-rules.md",
+        "sha256": "4623c20ee6379a49e6f7e979b24ee8753c0e4c3c3d82cf18b3680e2a475262b0"
+      },
+      {
+        "path": "evals/cases.json",
+        "sha256": "25d09afbaa908d74509735c90645fecc72cbb4500fb4b5a3e44f169f87c75579"
+      },
+      {
+        "path": "scripts/evaluate.mjs",
+        "sha256": "0459fded70d0885119bbcc68ba678a54010219d1390d318452ac619140ea88cf"
+      },
+      {
+        "path": "evals/adapter-pi-example.mjs",
+        "sha256": "c9d10db7e7ef9ed2b7b979c87a862bec5d5d160ee32c52788649d2c9c80ab9f1"
+      }
+    ]
+  },
+  "runtimes": [
+    {
+      "label": "交付22.23 编码",
+      "code": 0,
+      "stdout": "文本文件编码检查通过。\n",
+      "stderr": "",
+      "started": "2026-10-11T06:49:53.082Z",
+      "ended": "2026-10-11T06:49:53.239Z"
+    },
+    {
+      "label": "交付22.23 回归",
+      "code": 0,
+      "stdout": "回归完成：242 项真实测试，242 项通过。\n",
+      "stderr": "",
+      "started": "2026-10-11T06:49:53.084Z",
+      "ended": "2026-10-11T06:50:24.393Z"
+    },
+    {
+      "label": "交付22.23 安装",
+      "code": 0,
+      "stdout": "技能资源、相对 Markdown 链接和临时安装副本检查通过。\n",
+      "stderr": "",
+      "started": "2026-10-11T06:49:53.087Z",
+      "ended": "2026-10-11T06:50:25.127Z"
+    },
+    {
+      "label": "交付22.23 自检",
+      "code": 0,
+      "stdout": "回归完成：79 项真实测试，79 项通过。\n自检完成：79 项测试，79 项通过。\n",
+      "stderr": "",
+      "started": "2026-10-11T06:49:53.089Z",
+      "ended": "2026-10-11T06:50:04.283Z"
+    },
+    {
+      "label": "交付22.0 编码",
+      "code": 0,
+      "stdout": "文本文件编码检查通过。\n",
+      "stderr": "",
+      "started": "2026-10-11T06:49:53.091Z",
+      "ended": "2026-10-11T06:49:53.242Z"
+    },
+    {
+      "label": "交付22.0 回归",
+      "code": 0,
+      "stdout": "回归完成：242 项真实测试，242 项通过。\n",
+      "stderr": "",
+      "started": "2026-10-11T06:49:53.094Z",
+      "ended": "2026-10-11T06:50:22.704Z"
+    },
+    {
+      "label": "交付22.0 安装",
+      "code": 0,
+      "stdout": "技能资源、相对 Markdown 链接和临时安装副本检查通过。\n",
+      "stderr": "",
+      "started": "2026-10-11T06:49:53.095Z",
+      "ended": "2026-10-11T06:50:23.282Z"
+    },
+    {
+      "label": "交付22.0 自检",
+      "code": 0,
+      "stdout": "回归完成：79 项真实测试，79 项通过。\n自检完成：79 项测试，79 项通过。\n",
+      "stderr": "",
+      "started": "2026-10-11T06:49:53.098Z",
+      "ended": "2026-10-11T06:50:03.709Z"
+    }
+  ],
+  "execution": {
+    "actual_model_report": "evals/results/real-model-2026-10-11-reviewed.json",
+    "started": "2026-10-11T06:49:53.080Z",
+    "pid": 399115,
+    "ended": "2026-10-11T06:54:53.143Z",
+    "code": 0,
+    "summary": {
+      "cases": 41,
+      "automatic_failed": 0,
+      "operation_errors": 0
+    }
+  },
+  "sampling_limit": "未显式指定温度或seed，默认设置及供应商实现可能变化，不能承诺逐字复现。",
+  "prompt_validation": {
+    "cases": 41,
+    "errors": [],
+    "semantic_approval": "pending-human-review",
+    "pending": 41
+  },
+  "known_format_issue": {
+    "file": "LICENSE.zh-CN",
+    "reason": "用户已有尾随空格及EOF空行未修改；不是本轮代码或文档修复的格式错误"
+  }
+}

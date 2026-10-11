@@ -1,0 +1,350 @@
+{
+  "skill_version": "0.1.1",
+  "selection_kind": "真实运行成功响应索引，不是新增模型调用或import评测",
+  "semantic_approval": "pending-human-review",
+  "attempts": 42,
+  "upstream_operation_errors": 1,
+  "successful_cases": 41,
+  "automatic_failed_among_selected": 0,
+  "retry_note": "首批ste-flavored-claims连接错误保留；定向重试成功，其余40项取首批实际响应。",
+  "sources": [
+    {
+      "path": "evals/results/real-model-2026-10-11-release.json",
+      "sha256": "da3598b8530ea52cb066605f8f761e9688282f71efbb20d5cc642141e31c3ee4"
+    },
+    {
+      "path": "evals/results/real-model-2026-10-11-release-retry.json",
+      "sha256": "0c16d80ff5ee546013b94cd5cd2cac96e8fcb907f84a3c53523c60931843d183"
+    }
+  ],
+  "selections": [
+    {
+      "case_id": "meaning-and-scope",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "8d2eb6590db511d1de86d1288c52fff9ba61f675af0e65cb4af6a27d32e8559b",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "40ed95c943aa93e59c333d3f89f4e159e4cf713d380614d2bb270de36b6ace22",
+      "stdout_sha256": "13ac7bea4257e6e62c87629e5f50e276ab9cee9f7ee8c0c6693499a996a9f333"
+    },
+    {
+      "case_id": "numbers-and-units",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "332dc3da8ae62db286139d37b1f945faf36ac3e95344591abb706b5959fb0e34",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "723d8ccebd207d60a91ff0ced7f74bb235724f114839fddf4a1873b86a4ccaa7",
+      "stdout_sha256": "ea974e868c25a3b85b8f5d8a0bd84b35b55860e2965f76397719f485cbcd6217"
+    },
+    {
+      "case_id": "requirement-strength",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "4a477e6e56359533a3f76d6f61cf95443fc3d0bbeca6a7105235dc61a2bdcaab",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "2818f662579c43223a7a1648a9a89a4e9ee6975943d26d11e5c170cc76c5b1da",
+      "stdout_sha256": "cdbbe7c33b0c2dcd45ad11024bf5c118eb85dac58d0dc785515fb6a7a5f111db"
+    },
+    {
+      "case_id": "uncertainty",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "cb8b288a34c7761fb9523a5c09c316060aa8aa9ac2b5a20eb1120522166953ba",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "b6f1146936e5dad9972aaaf630d238946ed8bbba7f4ff99a2621560119e371d6",
+      "stdout_sha256": "a3a8f511c37cd79be3c1b5d11c539034629703c8a5a220fb4ab85820e9df951e"
+    },
+    {
+      "case_id": "no-op",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "20b685f4d093a465ec368483e05a0dabf1692092bcfc9f886e7c8652561ef817",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "2edb0f483d796be1a7d3d4dcabe521a24de4d4f419cf313cd9d3e3d21f63d93c",
+      "stdout_sha256": "040760143a6f1b83ccfca11e5bb2aa67e8f157c01e1329101c1490fd45446a52"
+    },
+    {
+      "case_id": "ambiguous-actor",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "26d0fd9d08033fa52e7667dffcc08691ec13b2db76286f562901371b946994d2",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "b60b9b0051ee65ee82d84390d6559f2e069c388e4866c16188fdd29ad60bd683",
+      "stdout_sha256": "6f5916119d115e4d23a91d282f1eb9be3e2c39d683af9a48f13f1430e38cb243"
+    },
+    {
+      "case_id": "source-injection",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "73593006114af9877ec141678afd8e3179d090d242bdfbd477dfa93a3c867e3e",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "3491a81f01ecd7d4b36deccb9787d3928fc663077195a025fb2b30063c3df790",
+      "stdout_sha256": "d7fe51d2e9765d918f624f633579cfdbde35bb6bea88423c8c53194a43147620"
+    },
+    {
+      "case_id": "protected-content",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "f9b557673cbc130740c33b8bedba553b6382ee4d3fe7851ea12596cee14f347a",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "4f9bd3dd152adb8c4b614c75afeae7d52ccf734d232e7486275e4698a30ccc57",
+      "stdout_sha256": "5b99a9e2204249981a7d7a0ac0651abd9a3e4110d6c9e4cd79efcb04af300a78"
+    },
+    {
+      "case_id": "body-only",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "4a93cdcfeee57152712e56f3784644c6051691e7dba166fc0bcbef70c05639d4",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "593bde6db2974a4d6819f30c5b10a8f980342c008e25d6b72458e42586f6820f",
+      "stdout_sha256": "32df9ecf38fab9040c3f6c68c60326cf7986f926d1613efe0ff2a5000946c2ec"
+    },
+    {
+      "case_id": "boundary-spoof",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "298f1626721070afd8b8c7937ef58d9655d35450a4b2df4c02b340760af16fad",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "3ed12651d0a27a387be9e916de66e6963e41d0636bd3eac1b1fef1351aa58ac6",
+      "stdout_sha256": "a8b736ba09a39537d617826ac506fd2fe87b2edbbb201db2fea975f0691cc347"
+    },
+    {
+      "case_id": "ste-flavored-claims",
+      "report": "evals/results/real-model-2026-10-11-release-retry.json",
+      "case_sha256": "14dff8494220e310dfcc49a70e2f0c1d4b3543fe0ff5c83c3db5681ef2cff15d",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "8b57f99a32d180d21274077353d8d5483928299f1431d30d50daeba00b981219",
+      "stdout_sha256": "a4ba4565f15ebc06ec38894c6f40e50037132d63df9c7db417c1732c5234e76e"
+    },
+    {
+      "case_id": "analysis-output",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "ab20a1296f4ec7a67d1f159637decdf82749f7e25bb27b81ce5c166f4cf4098f",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "2e5890abcd5a1902fc9188c89ae23e2ae7d5b7c703774d987a9d32f2c91afe9e",
+      "stdout_sha256": "74a59aae23f054a6bd0fde4e7c0778c3218ac4ccf75cd69ac2c4a078d6ce3960"
+    },
+    {
+      "case_id": "source-boundary-clarification",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "34cfab57942d861dd4b084ccdc1edfeac1dbac494ed579f1ad979b6b1695e8d6",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "b6e2833b6f59450b9c43f81aff6f275a8fa9e4a7dc1d843aadc05157a2ec6a65",
+      "stdout_sha256": "6ec9bf451fa6ba168fd84e902bed7dad0c6407020d9630138631b74bf699571c"
+    },
+    {
+      "case_id": "protected-long-instruction",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "261360cbaddadd4393164b41a06f35f38951ed28dd561987a8cec9b9d22b95fe",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "7011ebcf92260cbb6210dd18ea7c83c3afd6efae291ec4a3cae874e65242e34c",
+      "stdout_sha256": "5f2674239d4955c39cee21a768a6860e95f898fdbe6bd456939b7c8f82cc32ae"
+    },
+    {
+      "case_id": "steps-as-list",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "5b67f6f7426036013a2ac04799cbe115f31390ce238e4f9793ac2da1d22b06fd",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "afd309b4e2839b2a959eb117cc0310c174ead36e4dc6f70d614cf6741b3fcdf9",
+      "stdout_sha256": "65bb0147c86ccd1e3a81b085a51f5b494a0ea8443538d4d40ec34ace0df44909"
+    },
+    {
+      "case_id": "noncausal-timeout",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "8f4b412773a5453cfaa4ecaa3037f60bba79eb357b0b1d18f1ee5353e30a7f9d",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "667e7752f607c36c91f1d09cd4db35ee6b2b4c9163cd2ca3f4ddd4ebe82c1a89",
+      "stdout_sha256": "9e2380b8418a85b9e01430b069217281871c2d9b1eb7c61e84434ce091cea326"
+    },
+    {
+      "case_id": "condition-and-exception",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "7cc02ec0785b38636d5b6d51e406f3ee6ba3a4e1a6d5b4c58c79cf6ed62b6a03",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "fc3dfaf3931bcab34d718d96bf470bd68d1778fb4d86bf9da65e7baef29439d3",
+      "stdout_sha256": "69517d2e52a249ed3e874bfaf302bae768642a1e0a2248d401694c85112c7d38"
+    },
+    {
+      "case_id": "unknown-actor",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "7c970120426ab5dc9b4d646cb9a6039309b807bb62790157f3f64669b2d3fb53",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "97de5514efd9219d254a30bf8e0b11d4d51bdb9f22ae238a19e9ded6677c1a82",
+      "stdout_sha256": "5cf972defa5635d4986ab49390f567ccef6f33928fb6f973d2647ac5236562c7"
+    },
+    {
+      "case_id": "current-time-relevance",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "70bd6575a23ff682201e00b43b5b5ea5b82891d8acaacd04120e648f3fad9c5d",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "8cd418a7a9bccd5c0bee5f627d60f20288eba72800004884752ffa596a5621b5",
+      "stdout_sha256": "418755e2c99c2ea1c1031796c1b7ef7edc282c6021719b34fbf9b806ce155a3d"
+    },
+    {
+      "case_id": "distinct-actions-terminology",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "3d0a4b3cf8639d5efa2a2f6d612c96af2ea11fe0e0e7ce01575a291b013fee43",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "4ca8506c79e561253bd4415cf554886fb37ce48e8110a2a3f1d140403686aa82",
+      "stdout_sha256": "64b3327d99de6ee75716226ab647edbf4055edad99cf1f9f5f1dbca52c9ca969"
+    },
+    {
+      "case_id": "paragraph-structure",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "90f667417653d0b8a8c8d35291a93387d608cb881d8be3442529a5691eb18df0",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "7028663141716f308734382dbe5d3ddac971471001cad8e8ae08e48f115e9f0f",
+      "stdout_sha256": "642f1e51308a60e2123139963ba8da32ea9d591f0fe94a6c82297937d7081d5a"
+    },
+    {
+      "case_id": "technical-noun-name",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "8dc124a2be1f1e2439734804c8be82e4228ebe46265fdc8531ab14cda1835a41",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "c3f7ae87bdd6834610bdf42e66f20ec250c866293a5aea9e6629917fc87b260b",
+      "stdout_sha256": "d25129007acb3442c4d4958b332dcea7ad145a003d365d27cbf15d80619dc6b6"
+    },
+    {
+      "case_id": "direct-verbs",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "016f0b79f316a691297a0de6c0aef5acd62f492a1ecfdede6fb5ce80b13004af",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "d07792f4701380635746d79461b40d73f6a9cf6cf7d9aa509717cf4f695ec283",
+      "stdout_sha256": "ed9b111ef8a9180d8f125412ec8f904013889a79c5158d5f76e85dcf30e5dad4"
+    },
+    {
+      "case_id": "safety-condition-first",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "fa9cba2f58cae385ef83a20a9878acc98940b896e0f67276fe24a5c3951af81b",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "3c2248d5d39afec07a58a55b93ae04de9f9958fa340dc6d6a6fa00724dbb672f",
+      "stdout_sha256": "ba48aa98726bf2014f2df3db676af131c159d3991367b11894b338fcd570097a"
+    },
+    {
+      "case_id": "zh-no-op",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "799eb383344b73dc464ea0610b7396317a205cee4311ab3d1073da845ae06cae",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "155751cfe70a6492dfdffc47639984164d3db0b9d21675fbbfbd82846442d20d",
+      "stdout_sha256": "537e421f6dc66529f4a8c1d13631c0663863b0939d516f481dcd071e83aa5b8a"
+    },
+    {
+      "case_id": "zh-semicolon-split",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "1c5d00ffc3747d54ce1876c9b1524cf015e6cf0472d6ae93dd51dbc935a8fbaa",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "3ff51bc00b3bc529a29f31b14db0c54896d528634671da760287aa51a25c7836",
+      "stdout_sha256": "5a1f13060f2627c6fddc40c4c188cf4c3e1196d2976fde7e8ef8139a15a8e67f"
+    },
+    {
+      "case_id": "zh-requirement-strength",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "9405cf8b4b33bbdf8708e54c465a6497c73eaf0a2ba461f1279c51d5ea32e687",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "7aeaa561284a35f96b75bc7b6d027adb8131d2e05eeff0688e181a796d337bff",
+      "stdout_sha256": "163082732e3cf37836954710b9e0da093ce054c65e791dd4cb96bbc33779cf35"
+    },
+    {
+      "case_id": "zh-injection",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "f5dc5b564c4a32e79520478a7f897862d344d7babc0e431a28a2d1b8b17b62f6",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "ac087fdbed40c70a5dcf646ce56933b7d72d33e77c64e51308fb1cb5e8a8b7b6",
+      "stdout_sha256": "c6e7395664f913913fcb50e084652cc0ca7e8a82a81a44440fd79cc39938f1d0"
+    },
+    {
+      "case_id": "zh-paragraph-structure",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "3151d985872716dbbb5091d327a7f6855e48ba0b2b325675cd685b870d04b79e",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "bcb626a5153f7ec578410348d1d76ef95e287ff667ca108bf225c3740ff88eae",
+      "stdout_sha256": "561a4e72428461990726626ca1ddc23f05fcc74155c31e68ce2ac224e7edbba7"
+    },
+    {
+      "case_id": "active-voice-known-actor",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "673d4cb37d3e360a20f1f04173d485735396ace67fcded48fa369adfe1600c19",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "5945cc4ceb52c4c83da667afadd9e4e8479fb9a814dc80e31d323a8d6aa797fe",
+      "stdout_sha256": "bf42aea094af6da8704ef6d56825617acc924aa4bc359f40d4abdbe4d53bbbe7"
+    },
+    {
+      "case_id": "noun-stack-expansion",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "8a09dace14b00c7023ca65986929e0bb61afe013b93989a543ff9e50838c5098",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "e5912169fea37e1c713870637548ce036879adeda409e7dac695f6f44fdd1263",
+      "stdout_sha256": "94b06b69010496ebe42941e124af97578ba94cea7adecf86cbc4755b82f75e61"
+    },
+    {
+      "case_id": "barrier-phrase-removal",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "ff274ec2e7d1ea581c75229ccfc6120b0aae9b8d8b431ab63fac25841129f075",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "208542a3cfffcbf55e7ec134ad9efe646690ed10abd6ca891957e92b2582ef6b",
+      "stdout_sha256": "604538a8016aebc0cd32c426178c0e28807e159e8bd561147c04d67ff95a9b1c"
+    },
+    {
+      "case_id": "simple-tense-conversion",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "53401a8d9b73790ab1a6baec916a36cb2fd545eb9a40bb0c10d22fcfe228986d",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "67157fec41fb63ca6da2493f32c3928522673a5168090e2b6c5431d52e8e4ce5",
+      "stdout_sha256": "55d69e41c444649801cc20e1f310b28dfb32c720ff892bc2a6ea2d002c0a726e"
+    },
+    {
+      "case_id": "future-restart-tense",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "85aba59c3fdc9b64e6640460527bf91232d8413993d9aa1974b876e4cfb9d457",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "688e20f3074634a452d8b48b7392b5b13df80f932d98fea18543a1db4ac751f1",
+      "stdout_sha256": "f0a789af0231e440580fcfff3954db1ee88d7ff84a662894d86e80be63ad6ade"
+    },
+    {
+      "case_id": "since-yesterday-continuity",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "0557b1144bce300da57a775c570d45c50f63b6b91bb15a719321efd78dcc97d0",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "1f3d587b4c43465dff81b88eeb5957a327161d26e530e9a0edd3419cedc51dbc",
+      "stdout_sha256": "25dd9d1704c5e0ed6d90d56cd3a8522b2e3b7e9a6ed194c7158218caef2007bc"
+    },
+    {
+      "case_id": "unclear-restart-tense",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "18101f9f9d9c6eabbcbfc82a30931eb8d522ca43145bfb5447cd5db59b14a176",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "ab7d96028f5e08b2e68041b823aec15ceafa977332e3c47735e0eb6e993421c6",
+      "stdout_sha256": "8c5ea1662ba1e7278d9f766d3c66185451463cabb143e001019346a1369e8661"
+    },
+    {
+      "case_id": "terminology-consistency",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "aad2f8c5fa5f7649b05d0d1520cd636c90e7543d58e34e93e07dbe6119b8c2c8",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "c47b4fdc69e17200179659d550a4eee3b8ce92b3c542b6a99546de781ede2c3f",
+      "stdout_sha256": "abcf4129cd3da47735ac79361b9edb1a0a07dfff0997bd1bb43b6580803707a0"
+    },
+    {
+      "case_id": "glossary-authority",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "5aac11e2b0014fbcd2d3833cf75853615610c158bdb504f3c1c314e2ab7c02a6",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "b564b7cc5824a91762de0499e764e37804653816cdedd71e6090d4f7a64455fe",
+      "stdout_sha256": "41804eb204c35cb2424c7cfa7ccd701ffcfaf0ac84c771b884cc8e1b4de1fc29"
+    },
+    {
+      "case_id": "condition-list",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "7e45b6b6e97000858c67497540d0baf4bc3bd38e0c5ead10bc4afb9e82625cc3",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "399ae76c614d633c099f00b8a44f767832e81a63b494f8cb4b4634479f5b4923",
+      "stdout_sha256": "a86348202bb320020cb74616d91e3b994dfb504f52e2e0e945d59df720c60a49"
+    },
+    {
+      "case_id": "mixed-text-type",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "7410919b3a80d245dd512c73c518064d7b2d2fae52b9c35fa04964f2c4f8b969",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "15ee6300bf63ac1d4c856511b395d6762e67954ea8e1a2396336e690a8a92a86",
+      "stdout_sha256": "97e9a4f735c97c43d55aa374a9d75dc2241089cdd00c01d7a10211b8f61b501c"
+    },
+    {
+      "case_id": "ste-flavored-execution",
+      "report": "evals/results/real-model-2026-10-11-release.json",
+      "case_sha256": "c27df1ab25f1a806ec16d7b4064e4c02798ecf0fcccaf476106489ccada5fa12",
+      "skill_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+      "prompt_sha256": "407a28e05b99c4c4f7cb172ef49571df559e83c28091c8fdfffbc1e01d5d68ef",
+      "stdout_sha256": "cd8f41ebc18f04f07ff4a1eb271f2169da6e2ae181a8e3049d8050a3335eefff"
+    }
+  ]
+}

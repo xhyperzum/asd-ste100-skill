@@ -1,0 +1,93 @@
+{
+  "skill_version": "0.1.2",
+  "scope": "第四轮以后仅评测器尾部扫描实现优化；此处为单例真实集成，不是修后工具全量41例",
+  "semantic_approval": "pending-human-review",
+  "before": {
+    "version": "0.1.2",
+    "created_at": "2026-10-11T08:55:00.190Z",
+    "scope": "仅评测器尾部扫描性能修复后的单例真实集成，不是41例全量",
+    "sha256": {
+      "SKILL.md": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "references/chinese-writing-rules.md": "ae2d74a0d6ebd4ee517bbb26b6975a3f40714f5f8e4078ef0170882911fc93ec",
+      "evals/cases.json": "270e2646a102322a740eb2a2f00a7b8ec198d6732e2bfff519892fa954048e2e",
+      "scripts/evaluate.mjs": "6464f2e1b45b8f2007c9d4a1ae19bd2f0524530548639115d934692837537542",
+      "evals/adapter-pi-example.mjs": "6eb2682674f892628b2caa1636389d8a90ad14f6e5fe365b49f23e23b53acc40"
+    }
+  },
+  "after": {
+    "version": "0.1.2",
+    "created_at": "2026-10-11T08:57:03.998Z",
+    "sha256": {
+      "SKILL.md": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "references/chinese-writing-rules.md": "ae2d74a0d6ebd4ee517bbb26b6975a3f40714f5f8e4078ef0170882911fc93ec",
+      "evals/cases.json": "270e2646a102322a740eb2a2f00a7b8ec198d6732e2bfff519892fa954048e2e",
+      "scripts/evaluate.mjs": "6464f2e1b45b8f2007c9d4a1ae19bd2f0524530548639115d934692837537542",
+      "evals/adapter-pi-example.mjs": "6eb2682674f892628b2caa1636389d8a90ad14f6e5fe365b49f23e23b53acc40"
+    }
+  },
+  "execution": {
+    "name": "real-model-0.1.2-harness",
+    "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+    "args": [
+      "scripts/evaluate.mjs",
+      "--model",
+      "wokey/claude-opus-5-5",
+      "--output",
+      "evals/results/real-model-2026-10-11-0.1.2-harness.json",
+      "--case",
+      "glossary-authority",
+      "--timeout",
+      "120",
+      "--command",
+      "/usr/bin/env",
+      "PATH=/home/zone/.local/bin:/usr/local/bin:/usr/bin:/bin",
+      "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+      "evals/adapter-pi-example.mjs",
+      "wokey/claude-opus-5-5"
+    ],
+    "code": 0,
+    "signal": null
+  },
+  "report": "evals/results/real-model-2026-10-11-0.1.2-harness.json",
+  "report_sha256": "ccc2c5bb855fb7c2caa2e2d205158be932bc34ac11ea3099cad89477d26ac710",
+  "summary": {
+    "cases": 1,
+    "automatic_failed": 0,
+    "operation_errors": 0
+  },
+  "inputs_unchanged": true,
+  "comparison_to_round4": [
+    {
+      "path": "SKILL.md",
+      "round4_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "harness_sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e",
+      "unchanged": true
+    },
+    {
+      "path": "references/chinese-writing-rules.md",
+      "round4_sha256": "ae2d74a0d6ebd4ee517bbb26b6975a3f40714f5f8e4078ef0170882911fc93ec",
+      "harness_sha256": "ae2d74a0d6ebd4ee517bbb26b6975a3f40714f5f8e4078ef0170882911fc93ec",
+      "unchanged": true
+    },
+    {
+      "path": "evals/cases.json",
+      "round4_sha256": "270e2646a102322a740eb2a2f00a7b8ec198d6732e2bfff519892fa954048e2e",
+      "harness_sha256": "270e2646a102322a740eb2a2f00a7b8ec198d6732e2bfff519892fa954048e2e",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/evaluate.mjs",
+      "round4_sha256": "0459fded70d0885119bbcc68ba678a54010219d1390d318452ac619140ea88cf",
+      "harness_sha256": "6464f2e1b45b8f2007c9d4a1ae19bd2f0524530548639115d934692837537542",
+      "unchanged": false
+    },
+    {
+      "path": "evals/adapter-pi-example.mjs",
+      "round4_sha256": "6eb2682674f892628b2caa1636389d8a90ad14f6e5fe365b49f23e23b53acc40",
+      "harness_sha256": "6eb2682674f892628b2caa1636389d8a90ad14f6e5fe365b49f23e23b53acc40",
+      "unchanged": true
+    }
+  ],
+  "independent_review": "evals/results/review-2026-10-11-semantic-0.1.2-round4.md",
+  "prompt_scope": "独立行为审查者重建旧42份提示/41案例，实际字节和case/skill/prompt摘要均一致；只证明输入契约未变化，不等于重新调用模型"
+}

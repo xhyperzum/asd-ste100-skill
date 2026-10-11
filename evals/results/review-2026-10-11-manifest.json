@@ -1,0 +1,254 @@
+{
+  "recorded_at": "2026-10-11T07:26:49.299Z",
+  "branch": "main",
+  "head": "d60b08f7be5ff74787ac5a4318cedaeb1fb3f2a8",
+  "skill_version": "0.1.1",
+  "semantic_approval": "pending-human-review",
+  "scope": "追踪文件与非缓存未追踪文件；不含.git、本机.omc/.commandcode/graft缓存、本清单自身，以及最后核验本清单的review-2026-10-11-delivery.md，避免审查产物造成循环摘要。",
+  "files": [
+    {
+      "path": ".github/workflows/validate.yml",
+      "sha256": "f8c4db04e8abb497b2d7b0d73dc0d3526da3d5a96921238b617389ed667f80bf"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "ea2db9f970ae72b3426a31c4711b83b20a57581541787d2291b62b274f660aa7"
+    },
+    {
+      "path": ".ignore",
+      "sha256": "0ea71c680bffe38613b4a5e3667a569465bbf0451e2514cee4bc6bd3071e5540"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "106a59340886dd850f799bf063e026ef5f2455ea16a749f54ecdea8505f1b685"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "d3c674e8592076c9021a59b55177adbcba6fd7e1710082becb922522b22ec672"
+    },
+    {
+      "path": "LICENSE.zh-CN",
+      "sha256": "6dc0a764ce09372ba20524743938ec89751601bbe22569cc6e7d60324f661249"
+    },
+    {
+      "path": "README.md",
+      "sha256": "9fd617a9dde7be6331bad1f9a7f5e7025d1fde129aea390ffd31cb3e2192ff99"
+    },
+    {
+      "path": "SKILL.md",
+      "sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665"
+    },
+    {
+      "path": "evals/adapter-pi-example.mjs",
+      "sha256": "c78f681c28d85c5a9dfc282a8f2da475c1133bc7738a412f78b3d162e72adc16"
+    },
+    {
+      "path": "evals/cases.json",
+      "sha256": "e2f06c9b77ee5f592c3b5a1a91c4c4cab840e9a595564d49435d82dcee0240dc"
+    },
+    {
+      "path": "evals/results/agent-forward-2026-10-02-round-1.json",
+      "sha256": "186678259e06e6ab12dad9045177a21082bedfb9c348a38e00938a06efcebd4b"
+    },
+    {
+      "path": "evals/results/agent-forward-2026-10-02-round-2-review.md",
+      "sha256": "c9d4d3bc37f072de742f451adfaedb89e1c53e720f3eb83f0690f05bced0a71e"
+    },
+    {
+      "path": "evals/results/agent-forward-2026-10-02-round-2.json",
+      "sha256": "ace8ddabefaf8a57a421940910be2f4eb447a4191d8fee736382a5938688d1a9"
+    },
+    {
+      "path": "evals/results/agent-forward-2026-10-02-round-3-review.md",
+      "sha256": "2f682fdbe88007abe05672e963ef8312f9bd6096221ab2d0e7cd0d1651392e02"
+    },
+    {
+      "path": "evals/results/agent-forward-2026-10-02-round-3.json",
+      "sha256": "c3f8b305f2f480bd515a640fc55df0dc06ff08828877e4e78bee84c33a61ccd3"
+    },
+    {
+      "path": "evals/results/gpt-6.1-sol-2026-10-02.json",
+      "sha256": "9680ee35a300c057349ed40ad489362f88ad38c672a9221d68937e86f15dfda2"
+    },
+    {
+      "path": "evals/results/real-model-2026-10-10-outputs.json",
+      "sha256": "e5bf8ec7d8e90b8a5ee3ba5eeb9e3f0a56271040c61bf304dc61831412dc5922"
+    },
+    {
+      "path": "evals/results/real-model-2026-10-10-rounds.json",
+      "sha256": "a6a7f46595fa3d8c30553c0ba3d6f2a8cbd854431e4bceb11721e0fc1efcafee"
+    },
+    {
+      "path": "evals/results/real-model-2026-10-11-closeout.json",
+      "sha256": "fe21b483df447899fc322df22fb3f0387d5da4c956b636047eb9b0d40954056b"
+    },
+    {
+      "path": "evals/results/real-model-2026-10-11-final.json",
+      "sha256": "b1a2b4d613bdc1753c889c3ba3f9ee97331cd80650180a131db5a0361c3ea81c"
+    },
+    {
+      "path": "evals/results/real-model-2026-10-11-release-retry.json",
+      "sha256": "0c16d80ff5ee546013b94cd5cd2cac96e8fcb907f84a3c53523c60931843d183"
+    },
+    {
+      "path": "evals/results/real-model-2026-10-11-release.json",
+      "sha256": "da3598b8530ea52cb066605f8f761e9688282f71efbb20d5cc642141e31c3ee4"
+    },
+    {
+      "path": "evals/results/real-model-2026-10-11-reviewed.json",
+      "sha256": "5c5c8fdb0f753804bdf781fa4b50ebf65e52a7c67204cf851b6492efb6c394b3"
+    },
+    {
+      "path": "evals/results/real-model-2026-10-11-targeted.json",
+      "sha256": "2b2de3ba5a72d9696bbb249b4c3f43b0580562fa5fdfac644f0bc4d5f93d91c3"
+    },
+    {
+      "path": "evals/results/real-model-2026-10-11.json",
+      "sha256": "d76bff8016f778c420cd2d04e859ef9a340bc342d3e5bac524c5604e46feaaa9"
+    },
+    {
+      "path": "evals/results/repair-review-2026-10-02.md",
+      "sha256": "1f1ebe9b55f5222ff583f5d908d5ffbbc5ebaecba33b861ae53f1678e3ed322d"
+    },
+    {
+      "path": "evals/results/review-2026-10-02.md",
+      "sha256": "b231d82e7cc31fd24b29415422350a3c4188c0582af7fca37f6e3acbf7e9cff6"
+    },
+    {
+      "path": "evals/results/review-2026-10-11-adapter-final.md",
+      "sha256": "1c8d5c98bad3cca629ce459f200a86f06f5ca40bfeba9e734cd5eb4cb86cce89"
+    },
+    {
+      "path": "evals/results/review-2026-10-11-adapter.md",
+      "sha256": "2b77004f7e144c229da12eddd6bb0358756e7c40e74d5514dcb84633814dc418"
+    },
+    {
+      "path": "evals/results/review-2026-10-11-delivery-checks.json",
+      "sha256": "db4dfef9214d018513852aefa338087f631f19644fce43aac9fead91ee948a41"
+    },
+    {
+      "path": "evals/results/review-2026-10-11-evidence-0.1.1.json",
+      "sha256": "dbca77381b51b08f8e04aad67e7f54c14858b1240bd1ac2fa8305ff7bef514d9"
+    },
+    {
+      "path": "evals/results/review-2026-10-11-inputs.json",
+      "sha256": "42953ef37347a0770cdbd6621b6eb4919a005e7f299efd3821d3e69567fb6e33"
+    },
+    {
+      "path": "evals/results/review-2026-10-11-pi-0.1.0.md",
+      "sha256": "5c484949607bdaebcfbffc5bd363fbb379bf8246c1f8025a09e92858e560cc4f"
+    },
+    {
+      "path": "evals/results/review-2026-10-11-pi-0.1.1.md",
+      "sha256": "95ed7f2e1fb461ef0647af27bb5948de9af330cbcf6a4ae59d8a2ccf93181d53"
+    },
+    {
+      "path": "evals/results/review-2026-10-11-pi-receipt-0.1.1.json",
+      "sha256": "a2a9d48e7cba2493bb34d898b9ea3d102445ab1a75cad5a18f4fbe5d71293116"
+    },
+    {
+      "path": "evals/results/review-2026-10-11-selection-0.1.1.json",
+      "sha256": "f96e5fde872f8e93747a6f483dcb34b87aeec25c6499815275d56410f336a7e5"
+    },
+    {
+      "path": "evals/results/review-2026-10-11-semantic-0.1.0.md",
+      "sha256": "1959bc9e2a48e9a5f70fdd5535450e821bfca55f2d9f4f98b4741f0f22726885"
+    },
+    {
+      "path": "evals/results/review-2026-10-11-semantic-0.1.1.md",
+      "sha256": "48dbfe5bfe3f3ce765ff0c78bbc33474726e82318feb38312aec4d9af06faa8b"
+    },
+    {
+      "path": "evals/results/review-2026-10-11-structure-0.1.1.md",
+      "sha256": "9741fae6ed1beb0dd2253936607aa375e1d7afe940d23388df2220982529a64e"
+    },
+    {
+      "path": "evals/results/review-2026-10-11-structure.md",
+      "sha256": "5d91d0b8671b92dd0ae3805baf4ea59b206d8b1b6356d9962b744fe1cd0f1b80"
+    },
+    {
+      "path": "evals/results/review-2026-10-11-validation.json",
+      "sha256": "ef48e4b5b1d5bb9877d220228eb7bb92eaebbb6d8a9242c946064330efc089ac"
+    },
+    {
+      "path": "evals/results/review-2026-10-11.md",
+      "sha256": "03719cc69793ff087e827e11388fb28a036196575d2ee2aaa9465217401d9c5c"
+    },
+    {
+      "path": "examples/before-after.md",
+      "sha256": "a3f73df258017f66ab921ef5d4c805e688cbeaf7c68a05b0abb2634a0d689374"
+    },
+    {
+      "path": "examples/fixtures.json",
+      "sha256": "1f9dc8b5d228e8cf1ddee0ec23b83a33bec10052ec81a28c70e069f8d35092f5"
+    },
+    {
+      "path": "examples/linter-edge-cases.md",
+      "sha256": "0dd8be2f910efaf4e4d651d7006368bf76552649e7b62ec6f8ffee0cdd3fe899"
+    },
+    {
+      "path": "references/chinese-writing-rules.md",
+      "sha256": "4623c20ee6379a49e6f7e979b24ee8753c0e4c3c3d82cf18b3680e2a475262b0"
+    },
+    {
+      "path": "references/evaluation.md",
+      "sha256": "ecd21aa078459a60511bf0134b3efa943fc7d5e529d0bcf2dbea71edceaeb88c"
+    },
+    {
+      "path": "references/installation.md",
+      "sha256": "5e43f676e600f325f234c56481b35e625d70e77a192edd51ad6552d350d7b2ab"
+    },
+    {
+      "path": "references/linter.md",
+      "sha256": "ea979b3fb4727f93750da09caba2ef05e188b0412a0173044c2788d6cf6669f4"
+    },
+    {
+      "path": "references/writing-rules.md",
+      "sha256": "99e09e3f21d686485b3f4b998a258348a22aeb57d29ba8ba2ded86b00303c9ff"
+    },
+    {
+      "path": "scripts/check-install.mjs",
+      "sha256": "dcd6aa7fbc6421c28f700bbf4d76d55e06b97eea947412b053887ff418c9758b"
+    },
+    {
+      "path": "scripts/evaluate.mjs",
+      "sha256": "0459fded70d0885119bbcc68ba678a54010219d1390d318452ac619140ea88cf"
+    },
+    {
+      "path": "scripts/run-tests.mjs",
+      "sha256": "c0887ae2284cfc7ff93ff54e5fc3d6c1673d4f399a6d27de19258f8073f5ddfd"
+    },
+    {
+      "path": "scripts/ste-lint.mjs",
+      "sha256": "e9a3c0dac671ad2db96a50333ec841c6ca4096c0534fe61113db6fb47f149b54"
+    },
+    {
+      "path": "tests/test_adapter_pi.mjs",
+      "sha256": "15eb4423e447f66d49ee288b093f2fa5acd6146a84e09a748708e3b0cb74c33d"
+    },
+    {
+      "path": "tests/test_case_acceptance.mjs",
+      "sha256": "0a5a039f86c5d9eb738a65498a41b0ad95e707d630ec0e621946c572f219f933"
+    },
+    {
+      "path": "tests/test_consistency.mjs",
+      "sha256": "b94fe3117e0cefccdb0f13b9ec6a9c3d824cd93efcfd7558569bebbd16c69a4a"
+    },
+    {
+      "path": "tests/test_evaluate.mjs",
+      "sha256": "ee2982f13fb79f7512ebc89aeb109be154f075a3adbb1a2d83a99548a2fd0a1f"
+    },
+    {
+      "path": "tests/test_install.mjs",
+      "sha256": "dbf147900b68e1fef0c08311269e2b4bed77a3c9295347195aca9e4dbb7c9b9f"
+    },
+    {
+      "path": "tests/test_run_tests.mjs",
+      "sha256": "c83e0a008b0a4655841b2b01ce7180ac7f6ac8877cd18c3698e3db46082317c3"
+    },
+    {
+      "path": "tests/test_ste_lint.mjs",
+      "sha256": "261e3bafef326ec1484cac883905fda1e44f7bdedcc1d5a937c46b84420bf804"
+    }
+  ]
+}

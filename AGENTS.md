@@ -36,4 +36,4 @@ node scripts/check-install.mjs                      # 资源清单 + 临时安�
 
 `evals/results/` 是历史快照，只覆盖当时的技能版本与案例，不能当作当前版本行为已通过的证明。改规则或案例集时同步 `references/evaluation.md` 的覆盖表；CI 不调用模型。
 
-评测约束（`evals/cases.json` 的 `invariants`）只有子串匹配能力，**无法判断语义等价**。经验：把「结构是否改善」交给 `human_review`，只用 `contains` 检查必须保留的事实性片段（技术串、数值、否定关系）。凡是拿整句措辞做断言，迟早会误杀合法改写或漏掉真问题（已出现四次实例：三次误杀、一次漏检，见 [评测说明](references/evaluation.md)）。新增或修改约束后，用 `tests/test_case_acceptance.mjs` 的接受度测试锁住「合法改写不被误杀」。
+评测约束（`evals/cases.json` 的 `invariants`）只有子串匹配能力，**无法判断语义等价**。经验：把「结构是否改善」交给 `human_review`，只用 `contains` 检查必须保留的事实性片段（技术串、数值、否定关系）。拿整句措辞做断言会同时产生两类错误：误杀合法改写、误放不合规输出（已出现六处实例：误杀 4、误放 2，见 [评测说明](references/evaluation.md)）。只靠 `not_equals` 判断「已改变」也不可靠：改动标点即可绕过（`simple-tense-conversion` 即此例）。新增或修改约束后，用 `tests/test_case_acceptance.mjs` 的接受度测试锁住「合法改写不被误杀」与「不合规输出不被放行」。

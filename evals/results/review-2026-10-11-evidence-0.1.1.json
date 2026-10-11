@@ -1,0 +1,221 @@
+{
+  "skill_version": "0.1.1",
+  "semantic_approval": "pending-human-review",
+  "before": {
+    "captured_at": "2026-10-11T07:04:51.232Z",
+    "phase": "0.1.1最终真实运行开始前",
+    "skill_version": "0.1.1",
+    "model": "wokey/claude-opus-5-5",
+    "pi_version": "1.1.0",
+    "pi_launcher": {
+      "path": "/home/zone/.local/bin/pi",
+      "realpath": "/home/zone/.pi/agent/bin/pi",
+      "sha256": "da0c6a49fe94aadc9765cc7afc6ba6b17e553eed0247d0385c160bc188f5cfbb"
+    },
+    "node_version": "v22.23.2",
+    "adapter_system_prompt": "按照用户消息处理请求。",
+    "sampling": {
+      "temperature": "未显式设置，CLI/provider默认",
+      "seed": "未显式设置",
+      "thinking": "适配器未显式设置，CLI/provider默认"
+    },
+    "provider_configuration": "未归档认证或私有provider配置；路由名不能证明供应商内部服务身份",
+    "files": [
+      {
+        "path": "SKILL.md",
+        "sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665"
+      },
+      {
+        "path": "references/chinese-writing-rules.md",
+        "sha256": "4623c20ee6379a49e6f7e979b24ee8753c0e4c3c3d82cf18b3680e2a475262b0"
+      },
+      {
+        "path": "evals/cases.json",
+        "sha256": "e2f06c9b77ee5f592c3b5a1a91c4c4cab840e9a595564d49435d82dcee0240dc"
+      },
+      {
+        "path": "scripts/evaluate.mjs",
+        "sha256": "0459fded70d0885119bbcc68ba678a54010219d1390d318452ac619140ea88cf"
+      },
+      {
+        "path": "evals/adapter-pi-example.mjs",
+        "sha256": "c78f681c28d85c5a9dfc282a8f2da475c1133bc7738a412f78b3d162e72adc16"
+      }
+    ]
+  },
+  "after": {
+    "captured_at": "2026-10-11T07:17:54.331Z",
+    "files": [
+      {
+        "path": "SKILL.md",
+        "sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+        "after_sha256": "eaffc22e61418d4627e5f10e57b1c0eb155c45a0361fb9c9e4608d26698b9665",
+        "unchanged": true
+      },
+      {
+        "path": "references/chinese-writing-rules.md",
+        "sha256": "4623c20ee6379a49e6f7e979b24ee8753c0e4c3c3d82cf18b3680e2a475262b0",
+        "after_sha256": "4623c20ee6379a49e6f7e979b24ee8753c0e4c3c3d82cf18b3680e2a475262b0",
+        "unchanged": true
+      },
+      {
+        "path": "evals/cases.json",
+        "sha256": "e2f06c9b77ee5f592c3b5a1a91c4c4cab840e9a595564d49435d82dcee0240dc",
+        "after_sha256": "e2f06c9b77ee5f592c3b5a1a91c4c4cab840e9a595564d49435d82dcee0240dc",
+        "unchanged": true
+      },
+      {
+        "path": "scripts/evaluate.mjs",
+        "sha256": "0459fded70d0885119bbcc68ba678a54010219d1390d318452ac619140ea88cf",
+        "after_sha256": "0459fded70d0885119bbcc68ba678a54010219d1390d318452ac619140ea88cf",
+        "unchanged": true
+      },
+      {
+        "path": "evals/adapter-pi-example.mjs",
+        "sha256": "c78f681c28d85c5a9dfc282a8f2da475c1133bc7738a412f78b3d162e72adc16",
+        "after_sha256": "c78f681c28d85c5a9dfc282a8f2da475c1133bc7738a412f78b3d162e72adc16",
+        "unchanged": true
+      }
+    ]
+  },
+  "real_execution": {
+    "first": {
+      "label": "0.1.1终版完整41",
+      "args": [
+        "PATH=/home/zone/.local/bin:/usr/local/bin:/usr/bin:/bin",
+        "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+        "scripts/evaluate.mjs",
+        "--model",
+        "wokey/claude-opus-5-5",
+        "--output",
+        "/home/workspace/github/asd-ste100-skill/evals/results/real-model-2026-10-11-release.json",
+        "--timeout",
+        "120",
+        "--command",
+        "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+        "evals/adapter-pi-example.mjs",
+        "wokey/claude-opus-5-5"
+      ],
+      "started": "2026-10-11T07:04:51.239Z",
+      "done": true,
+      "stdout": "已保存 41 个案例的实际输出：/home/workspace/github/asd-ste100-skill/evals/results/real-model-2026-10-11-release.json；自动评估未通过 1 项，操作失败 1 项。\n语义维度仍需逐案人工复核；自动约束通过不代表技能行为已验证。\n",
+      "stderr": "",
+      "pid": 519817,
+      "code": 2,
+      "signal": null,
+      "ended": "2026-10-11T07:11:01.446Z"
+    },
+    "retry": {
+      "label": "0.1.1网络失败定向重试",
+      "args": [
+        "PATH=/home/zone/.local/bin:/usr/local/bin:/usr/bin:/bin",
+        "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+        "scripts/evaluate.mjs",
+        "--case",
+        "ste-flavored-claims",
+        "--model",
+        "wokey/claude-opus-5-5",
+        "--output",
+        "/home/workspace/github/asd-ste100-skill/evals/results/real-model-2026-10-11-release-retry.json",
+        "--timeout",
+        "120",
+        "--command",
+        "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+        "evals/adapter-pi-example.mjs",
+        "wokey/claude-opus-5-5"
+      ],
+      "started": "2026-10-11T07:12:37.085Z",
+      "done": true,
+      "stdout": "已保存 1 个案例的实际输出：/home/workspace/github/asd-ste100-skill/evals/results/real-model-2026-10-11-release-retry.json；自动评估未通过 0 项，操作失败 0 项。\n语义维度仍需逐案人工复核；自动约束通过不代表技能行为已验证。\n",
+      "stderr": "",
+      "pid": 584771,
+      "code": 0,
+      "signal": null,
+      "ended": "2026-10-11T07:12:43.886Z"
+    }
+  },
+  "raw_sources": [
+    {
+      "path": "evals/results/real-model-2026-10-11-release.json",
+      "sha256": "da3598b8530ea52cb066605f8f761e9688282f71efbb20d5cc642141e31c3ee4"
+    },
+    {
+      "path": "evals/results/real-model-2026-10-11-release-retry.json",
+      "sha256": "0c16d80ff5ee546013b94cd5cd2cac96e8fcb907f84a3c53523c60931843d183"
+    }
+  ],
+  "selection": "evals/results/review-2026-10-11-selection-0.1.1.json",
+  "prompt_validation": {
+    "cases": 41,
+    "unique": 41,
+    "errors": [],
+    "pending": 41
+  },
+  "tests": [
+    {
+      "label": "0.1.1 22.23 编码",
+      "code": 0,
+      "stdout": "文本文件编码检查通过。\n",
+      "stderr": "",
+      "started": "2026-10-11T07:04:51.242Z",
+      "ended": "2026-10-11T07:04:51.461Z"
+    },
+    {
+      "label": "0.1.1 22.23 回归",
+      "code": 0,
+      "stdout": "回归完成：247 项真实测试，247 项通过。\n",
+      "stderr": "",
+      "started": "2026-10-11T07:04:51.244Z",
+      "ended": "2026-10-11T07:05:28.921Z"
+    },
+    {
+      "label": "0.1.1 22.23 安装",
+      "code": 0,
+      "stdout": "技能资源、相对 Markdown 链接和临时安装副本检查通过。\n",
+      "stderr": "",
+      "started": "2026-10-11T07:04:51.246Z",
+      "ended": "2026-10-11T07:05:30.256Z"
+    },
+    {
+      "label": "0.1.1 22.23 自检",
+      "code": 0,
+      "stdout": "回归完成：79 项真实测试，79 项通过。\n自检完成：79 项测试，79 项通过。\n",
+      "stderr": "",
+      "started": "2026-10-11T07:04:51.248Z",
+      "ended": "2026-10-11T07:05:05.514Z"
+    },
+    {
+      "label": "0.1.1 22.0 编码",
+      "code": 0,
+      "stdout": "文本文件编码检查通过。\n",
+      "stderr": "",
+      "started": "2026-10-11T07:04:51.250Z",
+      "ended": "2026-10-11T07:04:51.421Z"
+    },
+    {
+      "label": "0.1.1 22.0 回归",
+      "code": 0,
+      "stdout": "回归完成：247 项真实测试，247 项通过。\n",
+      "stderr": "",
+      "started": "2026-10-11T07:04:51.252Z",
+      "ended": "2026-10-11T07:05:26.872Z"
+    },
+    {
+      "label": "0.1.1 22.0 安装",
+      "code": 0,
+      "stdout": "技能资源、相对 Markdown 链接和临时安装副本检查通过。\n",
+      "stderr": "",
+      "started": "2026-10-11T07:04:51.253Z",
+      "ended": "2026-10-11T07:05:27.771Z"
+    },
+    {
+      "label": "0.1.1 22.0 自检",
+      "code": 0,
+      "stdout": "回归完成：79 项真实测试，79 项通过。\n自检完成：79 项测试，79 项通过。\n",
+      "stderr": "",
+      "started": "2026-10-11T07:04:51.255Z",
+      "ended": "2026-10-11T07:05:04.697Z"
+    }
+  ],
+  "scope_note": "247/247与79/79为机械验证；41成功案例来自42次调用，1次连接错误未删除；只验证无工具且全量上下文的文字行为。"
+}

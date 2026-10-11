@@ -8,6 +8,8 @@
 
 命令适配器从标准输入接收完整 SKILL.md 和案例用户消息，标准输出必须仅包含模型响应。默认案例另有文本类型和独立数据边界；未标明原文区域的案例使用下述专用布局。适配器日志应写入标准错误。命令通过 argv 执行，不使用 shell；需要复杂 API 或协议时，调用方可以提供一个读取 stdin 并输出响应的适配器程序。
 
+CLI 还会读取 SKILL.md 中明确链接的 `references/chinese-writing-rules.md`，按 `--skill` 所在目录解析，并将完整规范作为补充资料放入提示。没有该链接的自定义技能不会加载本仓库规范；已声明但缺失、空白或编码无效的规范会使评测失败。`skill_sha256` 仍只对应 SKILL.md；每例的 `reference_files` 记录参考文件路径和 SHA256，`prompt_sha256` 对应实际提交的完整提示。公开函数的调用方若要评测完整中文分支，也必须显式传入该补充资料。
+
 ```bash
 node scripts/evaluate.mjs --model MODEL_ID --output /tmp/ste-evaluation.json --command MODEL_ADAPTER ARGUMENT
 ```
@@ -20,7 +22,24 @@ node scripts/evaluate.mjs --model MODEL_ID --output /tmp/ste-evaluation.json --c
 
 实测例子：本机全局 `AGENTS.md` 强制「默认使用简体中文」，而技能要求「输出语言随原文」。带全局指令运行时，英文案例的输出语言会被宿主配置影响。
 
-因此适配器应显式关闭这些自动加载（以 pi CLI 为例：`--no-extensions --no-tools --no-mcp --no-context-files --no-prompt-templates`）。**未隔离环境时得到的评测结果依赖本机配置，其他调用方无法复现；这类结果不能用来比较不同技能版本。**
+因此适配器应显式关闭这些自动加载（以 pi CLI 为例：`--no-extensions --no-tools --no-mcp --no-context-files --no-prompt-templates --no-skills`）。示例还使用 `--no-session` 避免把评测原文另存到 pi 的全局会话目录，用 `--offline` 关闭启动时的联网操作；模型请求仍会联网。适配器自身的系统提示也不得把技能允许的分析或必要澄清限制为“只输出改写稿”。**未隔离环境时得到的评测结果依赖本机配置，其他调用方无法复现；这类结果不能用来比较不同技能版本。**
+
+#### 从事件流提取响应
+
+示例从 stdin 接收提示，并通过 pi 的 stdin 转交，避免大提示超过操作系统的单个 argv 限额。若底层 CLI 输出 JSON 事件流，需要注意两个易错点：
+
+- **不要依赖增量事件**。以 pi 为例，非交互模式下只发出 `message_start` 与 `message_end`，没有 `message_update` 文本增量；只等增量会得到空响应。
+- **文本位于 `message_end` 的 `message.content` 数组**，需按 `type === 'text'` 过滤后拼接。同时应检查 `errorMessage`：模型或鉴权失败时该字段有值而 `content` 为空数组，不检查就会把错误当成“模型输出空文本”。
+
+事件流必须按流式严格 UTF-8 解码，并处理末尾没有换行的完整事件。损坏 JSON、无效 UTF-8、缺失或空最终响应、stdin 写入失败、启动失败及非正常退出均应报告操作错误，不得静默返回成功。最终消息明确标示 `length`、`error` 或 `aborted` 时也必须失败；非空的截断输出不算完整响应。缺失或未知的停止原因仍需结合正文和其他错误信号复核，不把兼容处理当作完整协议验证。
+
+模型标识需带 provider 前缀（如 `provider/model`）；只写模型名可能落到默认 provider，用错凭据而报鉴权错误。
+
+可运行的桥接示例见 [adapter-pi-example.mjs](../evals/adapter-pi-example.mjs)；它只是示例，不是技能运行资源，换用其他 CLI 时需重新实现同一契约。
+
+该示例直接复用评测器的容量常量：stdin 提示最多 8 MiB，pi 的 stdout 和 stderr 各累计最多 1 MiB。stdout 额度包含 JSONL 协议开销，不只是最终答案；超过任一额度时不输出部分答案，终止直属 pi、关闭管道，最多等待 100 ms 收尾。stdin 超限时不启动 pi。stderr 诊断只保留前 4 KiB，最终错误输出最多 4 KiB 加一个 LF；成功运行不把 pi 的 stderr 转发为模型答案。单独调用适配器没有请求时限，生产评测应通过本工具的 `--timeout` 控制；终止不保证清理整个后代进程树。
+
+每次实际模型运行必须同时归档输入冻结清单，至少记录技能、引用参考、案例集、评测器、适配器及原始报告的相对路径与 SHA-256，以及运行时版本、实际命令、隔离参数和适配器系统提示。报告的 `provenance` 仅记录命令，不自动记录适配器源码身份；只给 argv 不能证明不同轮次使用相同适配器。清单必须随报告交付，不能只留在本机 `.omc/` 缓存；运行前后的输入摘要应一致，否则标记为混合版本证据，不用于终版结论。
 
 可选参数：
 
@@ -51,7 +70,7 @@ node scripts/evaluate.mjs --model MODEL_ID --output /tmp/ste-evaluation.json --c
 | 导入单个 response 或 stderr | 各 1 MiB；单例合计最多 2 MiB |
 | 整批导入 response + stderr | 合计 16 MiB |
 
-响应可能包含原文或模型返回的敏感内容，报告的保存位置由调用方指定。末级报告路径必须不存在或是普通文件，拒绝 symlink、FIFO、设备和目录；不能覆盖技能、案例或导入响应文件的当前内容或适配器执行前的文件身份，包括 hardlink 别名。工具打开报告后检查实际文件描述符，再截断和写入，不能先截断再判断输入身份。
+响应可能包含原文或模型返回的敏感内容，报告的保存位置由调用方指定。末级报告路径必须不存在或是普通文件，拒绝 symlink、FIFO、设备和目录；不能覆盖技能、已加载的参考规范、案例或导入响应文件的当前内容或适配器执行前的文件身份，包括 hardlink 别名。工具打开报告后检查实际文件描述符，再截断和写入，不能先截断再判断输入身份。
 
 ## 案例格式与版本
 
@@ -65,9 +84,11 @@ node scripts/evaluate.mjs --model MODEL_ID --output /tmp/ste-evaluation.json --c
 | `invariants` | 可省略；只能包含下述有限约束 |
 | `prompt_variant` | 可省略；唯一显式值为 `unmarked-user-message` |
 
-约束 `contains`、`forbidden`、`any_contains`、`not_equals` 为非空字符串数组；`equals_input` 和 `requires_list` 为布尔值。`requires_list: true` 只检查至少三个受支持的 Markdown 列表项，不判断各项是否对应原动作、保留要求强度或顺序。纯空白的非空片段可以用于有限格式检查。数量、单位和技术标识写在 source 字符串中，不增加数值或嵌套 metadata 字段。JSON 文件按通用换行口径读取；文本身份以实际规范化后提交的内容及摘要为准。
+约束 `contains`、`forbidden`、`forbidden_line_prefix`、`any_contains`、`not_equals` 为非空字符串数组；`equals_input` 和 `requires_list` 为布尔值。`requires_list: true` 只检查至少三个受支持的 Markdown 列表项，不判断各项是否对应原动作、保留要求强度或顺序。支持行首最多三个空格后的 `-`、`+`、`*` 或一至九位数字加 `.`／`)`，标记后须有空格或 tab 及非空白正文；围栏代码和成对反引号内的标记不计。水平线优先于列表：整行由至少三个相同的 `*`、`-` 或 `_` 组成、其间和末尾仅有空格或 tab 时不计列表项，沿用 linter 的 `BLOCK_SEPARATOR` 支持范围，不承诺完整 CommonMark。纯空白的非空片段可以用于有限格式检查。数量、单位和技术标识写在 source 字符串中，不增加数值或嵌套 metadata 字段。JSON 文件按通用换行口径读取；文本身份以实际规范化后提交的内容及摘要为准。
 
-当前技能为 0.1.0，案例集扩展为 38 例。原 10 例的请求和约束也已修订，减少在请求中直接教给模型检查目标，并为确定需要改写的输入增加原文回显排除；无需改动及固定内容例外不强迫变更。案例或技能变化会改变摘要。
+字节额度之外还有固定同步工作量门禁，不提供绕过选项。每个案例所有数组约束合计最多 4096 个片段，总片段长度最多 16,777,216 个 UTF-16 码元。匹配前以响应长度 `R`、所有片段长度之和 `S`、值为 `true` 的布尔约束数 `B` 计算保守工作量 `(R + 1) × (1 + S + B)`；`equals_input: true` 时另加原文长度。长度均按 JavaScript UTF-16 码元计，工作量不得超过 16,777,216 单位，等于上限可执行。所有片段都计费，包括重复片段和 `any_contains` 可能短路的后续片段；不静默去重或丢弃约束。该估算限制重复扫描与前缀比较，不是毫秒承诺；整批最多 256 个案例，因此每批约束匹配估算也有上界。超限抛出中文 `EvaluationError`，CLI 退出 `2`，不写入或覆盖报告。`--timeout` 仅限命令阶段，不能替代这项同步预算；导入响应和直接 API 同样受限。预算会保守拒绝部分本可很快完成的长片段比较。
+
+当前技能为 0.1.2，案例集扩展为 41 例。原 10 例的请求和约束也已修订，减少在请求中直接教给模型检查目标，并为确定需要改写的输入增加原文回显排除；无需改动及固定内容例外不强迫变更。案例或技能变化会改变摘要。2026-10-10 的七轮快照仍只有当时的 38 例，不覆盖新案例或当前约束。
 
 ### 版本线说明
 
@@ -82,48 +103,111 @@ node scripts/evaluate.mjs --model MODEL_ID --output /tmp/ste-evaluation.json --c
 | [代理前向 round-2](../evals/results/agent-forward-2026-10-02-round-2.json) | 0.6.0 的 24 例 | 代理前向，非外部模型调用 |
 | [代理前向 round-3](../evals/results/agent-forward-2026-10-02-round-3.json) | 0.6.0 的 24 例 | 代理前向，非外部模型调用 |
 | [修复复核](../evals/results/repair-review-2026-10-02.md) | 上述记录的汇总复核 | 代理复核 |
-| [真实模型评测](../evals/results/real-model-2026-10-10-rounds.json) | 0.1.0 的 38 例，两轮 | 外部模型调用（`wokey/claude-opus-5-5`） |
+| [真实模型评测](../evals/results/real-model-2026-10-10-rounds.json) | 0.1.0 的 38 例，七轮 | 外部模型调用（`wokey/claude-opus-5-5`） |
 
 上述记录均绑定当时的 SKILL.md 与案例摘要，任何一条都不能作为其他版本的证明。
 
+真实模型评测拆为两个文件：主记录只保留判定、推理与已知短板（结论前置）；逐例原始输出与输出 SHA256 在 [输出文件](../evals/results/real-model-2026-10-10-outputs.json)，键为 `r{轮次}.{案例 ID}`。只有 r1、r2 留存当时的 source；r3–r7 共 190 条 source 为空，属于历史来源缺失，不用当前案例补填。仍可核对输出、摘要和已记录判定，但无法据此完整重建这些轮次的输入，或逐例核对源文与输出的语义对应关系。拆分目的是让复核者不必穿透原始输出；主记录的 `output_index` 指向该文件，两文件的条目对应关系及来源缺失披露由 `tests/test_consistency.mjs` 校验。
+
 ### 真实评测结论（2026-10-10）
 
-`wokey/claude-opus-5-5` 跑过三轮全量 38 例（第三轮用修正后的最终约束集），另对 5 个边界与歧义类案例重复跑了 5 轮。约束集在轮次间被修改过，因此历史判定不能反推。
+`wokey/claude-opus-5-5` 跑过七轮全量 38 例，另对边界与歧义类案例重复跑了 5 轮，并对修订后的案例重测 3 轮。约束集、部分源文与 `SKILL.md` 在轮次间改过，因此历史判定不能反推；各轮的适配器隔离情况见[评测记录](../evals/results/real-model-2026-10-10-rounds.json)（前三轮未隔离，第四轮起隔离）。
 
 #### 行为不稳定
 
 以下三例在不同轮次间结论不同，均属不稳定，不是稳定缺陷：
 
-- `source-boundary-clarification`：5 轮中 2 轮先请求澄清（符合 SKILL.md 第 30 行），3 轮直接改写未澄清。
-- `simple-tense-conversion`：5 轮中 4 轮改为简单过去时，1 轮原样保留完成时。
-- `steps-as-list`：前两轮正确输出 4 项列表，第三轮改为裸换行（4 个非空行、0 个列表标记）；裸换行在 Markdown 中渲染为单个段落，不符合 SKILL.md:68 的列表要求。
+- `source-boundary-clarification`：七轮中 r2、r3、r4 未先澄清，r1、r5、r6、r7 通过当时约束。
+- `simple-tense-conversion`：r1、r4、r5、r6 未通过当时约束，r2、r3、r7 通过。旧案例的时间解释另有缺陷，不能把这些失败全部认定为语义错误，详见「旧时态判据的观察与限制」。
+- `steps-as-list`：七轮中一轮改为裸换行（4 个非空行、0 个列表标记）；裸换行在 Markdown 中渲染为单个段落，不符合 SKILL.md「段落和列表」规则的列表要求。
 
-#### 稳定遵守（以 3 轮以上为据）
+#### 稳定遵守（以有效轮次为据）
 
-- `ambiguous-actor`：5 轮全部先请求澄清；`analysis-output`：5 轮全部通过。
-- `safety-condition-first`：5 轮均完成条件前置，措辞在 `Do not...until` 与 `Before you remove...` 之间变化；措辞差异不代表失败。
-- `terminology-consistency`：前两轮未统一 `duplicates`，**第三轮正确统一为 `copies` 并通过检查**。
+七轮全量中，按有效轮次统计有 32/38 例从未失败（源文已修订的案例只计修订后的轮次）。下列案例在**有效轮次内无失败**：
+
+- `analysis-output`：七轮全部通过。
+- `terminology-consistency`：源文于 r6 起生效，r6、r7 均通过；另以修订后的源文重测 3/3。详见下节。
+- 其余 30 例同样在各自有效轮次内从未失败（完整逐例判定见[评测记录](../evals/results/real-model-2026-10-10-rounds.json)的 `valid_matrix`）。
+
+下列案例**有失败记录，不计入「稳定遵守」**，但失败次数少且已有解释：
+
+- `ambiguous-actor`：七轮中 r1 失败，原因是旧约束只认英文问号（约束缺陷，已修）；修正后连续六轮通过。
+- `safety-condition-first`：七轮中三轮触发当时约束。r1、r5 为枚举措辞误判；r7 保留 `only after` 而触发语序禁令。2026-10-11 复核确认技能允许条件或命令开头，不能从该形式推出安全顺序错误，已撤回“不执行”的归因。当前约束不禁用合法的命令开头；断电、拆卸及重连的前提仍须人工逐案核对。
+- `mixed-text-type`：r1 有一次操作错误，随后六轮通过当时约束；操作失败不等于模型语义失败，但仍不计入从未失败的 32 例。
+
+`current-time-relevance` 与 `simple-tense-conversion` 构成时态规则的对照：前者在所有轮次均通过，后者在补判据前多次失败。
+
+#### 案例设计缺陷（非模型不遵守）
+
+`terminology-consistency` 在修订前 r1–r5 中失败三次（有效轮次 r6、r7 均通过）。但原源文的三个对象（files / data / templates）不同，而 SKILL.md「术语一致」规则的例外条款允许不同对象使用不同术语，**模型保留 `duplicates` 可能是在执行例外而非不遵守，结果无法解释**。
+
+修订为同一配置文件、同一动作（复制）、仅目标文件夹不同后，模型 3/3 稳定统一。同时以 `distinct-actions-terminology`（不同对象不得统一）作对照，3/3 通过且输出与原文一致。两个案例的边界因此互不冲突。
+
+**教训：案例设计歧义会被误读为模型不合规。** 判定不合规前先检查规则本身是否允许另一种解读。
+
+#### 旧时态判据的观察与限制
+
+`simple-tense-conversion` 在七轮中四轮未通过当时约束；`current-time-relevance` 七轮均通过。旧结论将前者认定为模型未执行，并补充了按时间标记判断的规则。
+
+2026-10-11 的独立复核发现：`before the restart` 只表达先后关系，不能独立证明重启已经发生；没有显式“延续至今”标记，也不能证明现在完成时没有当前相关性。**撤回旧案例“设计正确、失败必为模型未执行”的归因**。历史判定与输出仍保留，不按新解释改写历史结果。
+
+当前判据改为判断完整时间关系；转换正例补足已结束的语境，并增加未来重启、`since yesterday` 持续状态及时间不明保留的案例。原有简单时态专项和对照专项各 5/5 的结论仅有汇总，原始报告未归档，不能证明当前判据可靠。
+
+### 约束强度审计与加固（2026-10-10）
+
+逐例检查「无强制键 + 最小改动即可通过」的约束：只改末尾标点、把分号换句号等，看是否仍被接受。
+
+**已加固 3 处**（候补先零成本验证：能封堵最小改动，且不误杀 266 条已归档输出中原本通过的条数）：
+
+| 案例 | 补入的 forbidden | 原来的缺口 |
+|---|---|---|
+| `active-voice-known-actor` | `is reviewed by`、`was reviewed by` | 未检查被动语态是否改为主动；只加一个标点即可通过 |
+| `noun-stack-expansion` | 原文的长名词串 | 未检查名词堆叠是否展开 |
+| `glossary-authority` | `message buffer stores`、`message buffer is full` | 未检查正文是否改用术语表的 `queue`（术语表声明行本身保留） |
+
+**当时验证加固未改变历史判定**：2026-10-10 使用当时加固后的约束回放 266 条已归档输出，逐条比对原判定，零变化。这不是对当前演进后案例与约束的回放声明。
+
+**拒绝的候补 2 处**：`paragraph-structure`（会误杀 r1、r2、r3、r5、r6 的原本通过输出）、`source-injection`（会误杀全部七轮，因为那句是原文的一部分）。
+
+**未提出候补 4 处**：`protected-content`、`protected-long-instruction`、`boundary-spoof`、`zh-paragraph-structure`。它们的「原文特定形式」即内容本身（技术串、边界标记、段落结构），无法在不误杀的前提下写出 `forbidden`；可验证性上限到此为止。
+
+**残余限制**：`forbidden` 只能确认「原文的某个形式已消失」，不能确认改写达到了规则要求（「`is reviewed by` 消失」不等于「已改为主动语态」）。后者仍靠 `human_review`。
+
+> `body-only`、`direct-verbs`、`active-voice-known-actor`、`unknown-actor` 这四个案例在七轮中均通过当时的有限约束。这只能说明那些具体输出未触发约束，不能据此把 SKILL.md 的“优先”或“应考虑”升级为无例外的硬性要求。
 
 > 已更正的错误结论：本记录早期版本据前两轮写「`terminology-consistency` 两轮输出完全一致、稳定不遵守」。第三轮推翻了它。**两轮的一致性不能推断稳定性**；本记录中所有「稳定」表述均已改为以 3 轮以上数据或明确的多数分布为据。
 
 #### 修正的约束缺陷
 
-四处，都是同一类错误——用字面串匹配判断语义，把合法改写判为失败。修正前后均以真实模型输出回归验证：
+下表限定为 2026-10-10 的历史审计范围，不是当前缺陷总数。2026-10-11 首轮新增一次安全案例误杀，已撤回后置结构禁令，单独记录在当前复核结论中，不改写旧六处的历史统计。
+
+六处，前五处与第六处属于同一类错误——用枚举措辞或字面串匹配判断语义，导致误杀或漏检；当时修正前后用真实模型输出回归验证：
 
 | 案例 | 原约束的问题 |
 |---|---|
 | `ambiguous-actor` | 只接受英文 `?`；模型用「请指出」式中文澄清，被误判 |
 | `safety-condition-first` | 只接受 4 种条件前置写法；`Do not X until Y` 被误判 |
 | `source-boundary-clarification` | 只接受「请确认」；模型写「请**先**确认」，插词导致误判 |
-| `safety-condition-first` | 只检查条件是否前置，丢掉第二句的 `do not reconnect` 否定仍能通过 |
+| `safety-condition-first` | 只检查条件是否前置，丢掉第二句的 `do not reconnect` 否定仍能通过（漏检） |
+| `safety-condition-first` | 第二次修订时，旧的 `any_contains` 枚举具体措辞，第五轮出现 `Do not X before Y` 这一未列举的等价写法，又被误判。随后使用的后置结构禁令也与技能允许明确条件或命令开头的规则不一致，2026-10-11 已撤回。当前只机械检查技术词、否定关系、分号与原样回显；**动作顺序无法用子串判断**，由 `human_review` 逐案核对 |
+| `simple-tense-conversion` | 历史上曾用 `forbidden` 要求移除 `has saved`；2026-10-11 复核确认时间解释不充分，已撤回这种目标形式禁令。当前正例补足历史时间，自动检查只核对最低事实片段与原样回显 |
 
-**结论：单轮评测不能作为技能行为已通过的证据。** 三轮已足以区分「稳定」与「不稳定」，但不足以给出通过率；各轮失败数（前三轮为 5、2、2）也不可直接相减，因为中间改过约束集。
+最后两处暴露的是**结构性弱点而非单个漏网写法**：只要约束靠枚举合法措辞、或只靠「不等于原文」判断改变，就会出现漏网。安全条件案例不以自动约束证明动作顺序；当前时态案例也不机械判定是否应转换或是否已转换。原文只追加标点仍可能通过有限约束，时态是否保真及是否达到结构目标必须逐案人工复核。
 
-第三轮（最终约束集）的 2 项未通过：`source-boundary-clarification`（未澄清）与 `steps-as-list`（裸换行）。两者都是模型的真实不合规，不是约束缺陷。
+**结论：单轮评测不能作为技能行为已通过的证据。** 七轮已足以区分「稳定」与「不稳定」，但不足以给出通过率。**各轮失败数（5、2、2、3、2、1、1）不可相减或比较**：中间改过约束集、源文、适配器隔离方式和 `SKILL.md` 本身；只有「同一案例在同一约束下的重复表现」才有解释力。第六轮之所以只有 1 项未通过，主要是因为前几轮暴露的约束缺陷与案例歧义已修，而不是模型行为改善。
+
+第五轮（补充边界优先级规则后的 `SKILL.md`，隔离适配器）的 2 项未通过：`safety-condition-first`（旧约束误判）与 `simple-tense-conversion`。第六轮仅后者未通过，四次失败输出相同；该事实可复核，但旧案例的时间解释不充分，不能从“未改变时态”推出语义不合规。
+
+多次运行还显示：38 例中 11 例在全部已跑轮次中输出**完全相同**，27 例有措辞变化。因此「不稳定」是部分案例的特征，不是整体属性。该统计随轮次增加会变化，需按最新记录重新计算。
 
 ### 已知约束短板
 
-`ambiguous-actor` 使用 `any_contains` 检查是否出现澄清措辞。把原文原样加一个问号即可通过自动约束。这一短板不修：该案例的正确行为就是提问，收紧会重新引入对合法澄清的误杀（首轮已发生过一次）。该案例的 `human_review` 要求复核「澄清重点是原文区域，不是无关词义或模式」，只能人工判读。
+评测约束（`evals/cases.json` 的 `invariants`）只有子串匹配能力：`contains`、`forbidden`、`any_contains`、`not_equals`。用它表达「语义等价」或「顺序关系」必然出错，已出现六处实例（误杀 4、误放 2）。可检验的事实性片段（技术串、数值、否定关系）适合用 `contains`；结构是否改善、顺序是否正确应交 `human_review`。
+
+两条未消除的具体短板：
+
+- `ambiguous-actor`：用 `any_contains` 检查是否出现澄清措辞，把原文原样加一个问号即可通过。**不修**：该案例的正确行为就是提问，收紧会重新引入对合法澄清的误杀（第一轮已发生过一次）。
+- `safety-condition-first`：子串匹配无法判断动作顺序，**反转安全条件的写法（`Remove the panel before you disconnect the power supply`）仍会通过自动约束**，属严重漏检。该案例的 `human_review` 第 1 与第 5 条明确要求人工复核顺序，并注明自动约束测不到。
 
 `semantic_approval` 始终保持 `pending-human-review`。已完成的语义复核由生成记录的同一会话代理完成，**不是独立复核**，结论需由其他人重跑确认。
 
@@ -143,9 +227,11 @@ node scripts/evaluate.mjs --model MODEL_ID --output /tmp/ste-imported.json --imp
 
 下表将技能契约与当前正式案例对应。它表示案例设计覆盖，不表示模型已通过这些规则；示例 fixtures 与工具单元测试也不能替代实际模型输出。
 
-| 规则或契约 | 案例 ID | 重点复核 |
+中文机械规则另有回归登记：连续西文串中的小数和版本点号按一个串计数，边界反例在 `tests/test_ste_lint.mjs`；中文末尾连接词检查只能按后缀提示，无法区分“和”与“总和、饱和”等词，已降为 advisory，不影响退出码。英文连接词规则等级不变。这些机械回归不是模型语义通过证据。
+
+| 规则或契约 | 案例 ID／工具回归 | 重点复核 |
 |---|---|---|
-| 术语一致与术语表 | `terminology-consistency`、`glossary-authority`、`distinct-actions-terminology` | 同概念统一；有术语表时以表为准；不同对象不强刚统一 |
+| 术语一致与术语表 | `terminology-consistency`、`glossary-authority`、`distinct-actions-terminology` | 同概念统一；有术语表时以表为准；不同对象不强制统一 |
 | 条件使用列表 | `condition-list`、`steps-as-list` | 条件分别列出，保留各自强度 |
 | 混合文本类型 | `mixed-text-type` | 步骤与说明分别按各自的句长处理 |
 | STE-flavored 执行面 | `ste-flavored-execution` | 拆分结构并保留事实，词汇统一只作建议 |
@@ -158,23 +244,29 @@ node scripts/evaluate.mjs --model MODEL_ID --output /tmp/ste-imported.json --imp
 | 数量、单位与时序 | `numbers-and-units` | 数值、单位、上下界及操作顺序保持 |
 | 要求强度 | `requirement-strength` | MUST、SHOULD、MAY 仍对应原动作 |
 | 不确定性和简单时态例外 | `uncertainty`、`current-time-relevance` | 可能因果、持续至今的关系不改成确定或已结束 |
+| 完整时间关系与时态保真 | `future-restart-tense`、`since-yesterday-continuity`、`unclear-restart-tense` | 未来事件不当成已结束；完整 since 表达保持持续状态；时间不明不猜测 |
 | 主动语态及未知 actor 例外 | `unknown-actor`、`noncausal-timeout` | 不猜测 actor；发生条件不加强为原因 |
 | 每句一个动作、分号 | `body-only`、`direct-verbs`、`steps-as-list` | 拆开可确定的动作，保留顺序和力度 |
 | 三个以上操作要求使用列表 | `steps-as-list`、`requirement-strength` | 动作分别列出，MUST / SHOULD / MAY 不升级或降级 |
-| 段落主题与六句目标 | `paragraph-structure` | 合理分段或合句，七项事实保持 |
-| 安全条件置前 | `safety-condition-first`、`numbers-and-units` | only after、until 和操作前提保持 |
+| 段落主题与六句目标 | `paragraph-structure`、`zh-paragraph-structure` | 核对主题分组及多主题列表结构，七项事实保持 |
+| 安全前提与动作顺序 | `safety-condition-first`、`numbers-and-units` | only after、until 和操作前提保持；条件或明确命令开头均可，不以语序代替动作顺序 |
 | 直接动词与短语动词 | `body-only`、`direct-verbs` | 减少名词化，但不改变动作或对象 |
 | 名词堆叠中的固定名称例外 | `technical-noun-name` | 固定策略名称原样保留，不解释未知术语 |
 | 技术字符串与长句例外 | `protected-content`、`protected-long-instruction` | CLI、参数、路径、URL 不截断、不执行 |
 | 同一概念术语一致的边界 | `distinct-actions-terminology` | 不把不同对象的 start / launch 强制统一 |
 | STE-flavored、设计意图和程度 | `ste-flavored-claims` | 不添加性能证据或把 designed to 升级为保证 |
 | 默认正文、无需改动、分析输出 | `body-only`、`no-op`、`analysis-output` | 分别遵守英文正文、原样返回、中文分析与英文对照 |
-| 必要澄清与原文区域 | `ambiguous-actor`、`source-boundary-clarification` | 问题针对实际未知信息，不猜测或抢先输出成稿 |
+| 必要澄清与原文区域 | `ambiguous-actor`、`source-boundary-clarification` | 问题只针对当前未知信息，不猜测或抢先输出成稿；边界未确认时不根据疑似编辑要求推断冲突，不误称不改原句与解释每项改动必然矛盾；要求说明不强制发生改动，无改动时如实说明 |
 | authority/data 边界 | `source-injection`、`boundary-spoof` | 引文和伪角色仍是数据，没有变成控制指令 |
+| 中文合法字形变体计数 | 工具回归，未新增模型案例 | 汉字附合法变体选择符的边界见 `tests/test_ste_lint.mjs`；计数支持范围见 [linter 说明](linter.md)，不等同于任意字素簇分词 |
+| 水平线与列表的结构判定差分 | `steps-as-list` 的工具回归，未新增模型案例 | `tests/test_evaluate.mjs` 对比 linter 的水平线处理；覆盖三条伪列表、真实列表混排及代码标记边界，不扩大为完整 Markdown 解析 |
+| 资源总工作量 | 工具回归，未新增模型案例 | 约束数量、精确预算边界、256 前缀 × 512 KiB 响应见 `tests/test_evaluate.mjs`；共享目录与未闭合链接扫描的资源边界由安装器 lane 回归，范围见 [安装验证说明](installation.md) |
 
 完整句子、保真例外和输出包装是所有案例的共同人工复核维度，不靠词数或字符串出现次数判定。
 
-自动检查仅包括非空响应、必要片段、禁止片段、至少出现一个片段、不得只输出攻击标记、确定需改写案例的原文回显排除、无需改动案例的原文比较，以及至少三个受支持列表项的有限检查。原文比较只忽略响应两端的空白；其他改写不要求与一个固定答案完全相同。列表检查不是完整 Markdown 结构解析，也不能确认操作与条目的对应关系。
+自动检查仅包括非空响应、必要片段、禁止片段、禁止行前缀、至少出现一个片段、不得只输出攻击标记、确定需改写案例的原文回显排除、无需改动案例的原文比较，以及至少三个受支持列表项的有限检查。`forbidden_line_prefix` 仅按 CRLF、CR、LF 分行，再用 JavaScript 的 `trimStart()` 移除每行开头空白后检查指定前缀，可覆盖 CRLF、标记后接同一行正文和行尾空白；不把 Unicode 行分隔符当作新的行边界，这是有限词法检查，不证明任意注入指令未被执行，也不把带引号或块引用的标记一概判为执行。原文比较只忽略响应两端的空白；其他改写不要求与一个固定答案完全相同。列表检查不是完整 Markdown 结构解析，也不能确认操作与条目的对应关系。
+
+响应的 CRLF／CR／LF 拆行结果在同一案例内复用，行首去空白也只处理一次；列表的代码屏蔽使用独立副本，不改变前缀约束的原始词法检查。2026-10-11 本轮中文变体、结构差分和资源总工作量登记均为工具回归，不增加正式模型案例，不改变 41 例或技能版本，也不更新历史模型结果。各 lane 的定向测试不等价于全量 CI 或真实模型重跑；未执行的其他 lane 回归不能由本 lane 宣称通过。
 
 这些约束不能确认语义对应关系：保留了 MUST 和 MAY 也可能把它们放到错误动作上；包含问号或“请标明”等措辞不代表澄清内容正确；只改一个标点也可能绕过原文回显排除。字符串和列表约束还可能对语义等价的替代措辞或合法格式产生误报。每个案例因此另有中文 `human_review` 维度，分别核对语义保真和结构执行；报告始终保持 `pending`，自动通过不会升级为语义批准。
 
@@ -189,3 +281,15 @@ node --test tests/test_evaluate.mjs
 ```
 
 这些测试用明确标为合成数据的适配器检查 argv、stdin、日志、超时、哈希、导入来源及退出码。FIFO 边界夹具需要 POSIX `mkfifo` 命令；完整自动回归与安装验证要求该环境，CI 使用 Ubuntu，缺少命令时应失败而不是跳过。生产工具本身仅使用 Node.js 内置模块，不调用 `mkfifo`。测试不调用模型，也不证明模型遵守技能。
+
+0.1.2 的接受度门禁要求当前全部 41 个案例都实际执行专属接受和拒绝断言；删除任一侧断言或新增未覆盖案例会失败。它验证已选合法变体不被当前约束误杀，以及所选的可机械检查违规不被放行，不证明任意改写语义等价。`meaning-and-scope` 的排他词接受 `only` 或句首 `Only`；`safety-condition-first` 的重连否定接受 `not reconnect` 或 `not be reconnected`。`ambiguous-actor` 另接受无问号的有限澄清短语「请告诉我 `it` 指哪一方」，并用真实响应及擅选施事者后索取泛泛反馈的反例回归。这些有限变体不改变技术标识、URL、路径、单位和其他必须保留字符串的大小写敏感匹配。安全动作顺序、要求强度的对应范围和时间语义仍由逐案人工复核处理，不能把正反例覆盖率写成语义通过率。
+
+## 2026-10-11 对抗审查与收尾
+
+当前 0.1.2 的完整[对抗审查记录](../evals/results/review-2026-10-11-closeout-0.1.2.md)保存四批各 41 例、一次真实失败重试及一次修后 harness 单例，共 166 次被测案例调用。第四轮去重后的 41 份成功响应独立 AI 行为复核为 100/100；此前 96、100、98 分及第二轮的自动误杀不被覆盖。规范与适配器／评测器工程分别独立评分 100/100，有限自动接受度仍为 90/100，不合并为整体满分。模型和工具的测试口径、输入快照及待人类审批范围见该报告；当前评测器未全量重跑 41 例。
+
+[自包含源码快照](../evals/results/review-2026-10-11-sources-0.1.2.json)保留五阶段的 11 个正文 blob；[第四轮取证](../evals/results/review-2026-10-11-evidence-0.1.2-round4.json)与[修后 harness 取证](../evals/results/review-2026-10-11-evidence-0.1.2-harness.json)分开归档。独立核对六份原始报告和全部 166 个实际 prompt，不依赖本机 `.omc` 重建历史输入。最终双 Node 工具结果见[验证收据](../evals/results/review-2026-10-11-validation-0.1.2.json)。
+
+历史 0.1.1 的完整证据见[收尾报告](../evals/results/review-2026-10-11.md)。首批 41 例中 40 例成功、1 例供应商连接错误；该例真实重试成功，去重后 41 例均有成功输出。累计 42 次被测调用保留 1 次网络失败，不能改写为首批零错误，也不将不同版本的各轮结果相减得到通过率。
+
+报告归档了[成功响应来源](../evals/results/review-2026-10-11-selection-0.1.1.json)、[输入前后摘要与运行凭据](../evals/results/review-2026-10-11-evidence-0.1.1.json)、规范与行为独立审查及指定 pi 的真实调用收据。其范围是无工具权限、全量技能与参考上下文；按需触发、开放工具场景、供应商隐藏配置和多轮稳定性仍未验证。整体及逐例语义审批保持 pending，不因自动通过或代理评分升级。

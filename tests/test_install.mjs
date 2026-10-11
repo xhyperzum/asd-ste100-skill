@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdtempSync, mkdirSync, rmSync, statSync,
+import { cpSync, existsSync, lstatSync, mkdtempSync, mkdirSync, readFileSync, rmSync, statSync,
   symlinkSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -9,7 +9,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { discoverTests } from '../scripts/run-tests.mjs';
 
 import { REQUIRED_PATHS, checkNodeVersion, checkTextFiles, checkResources,
-  checkMarkdownLinks, run, checkInstall } from '../scripts/check-install.mjs';
+  checkMarkdownLinks, copySkillResources, run, checkInstall } from '../scripts/check-install.mjs';
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const INSTALLER = path.join(ROOT, 'scripts', 'check-install.mjs');
@@ -41,6 +41,125 @@ function runCli(args) {
     maxBuffer: 8 * 1024 * 1024,
   });
 }
+
+function createSharedDag(root) {
+  const base = path.join(root, 'references', 'dag');
+  mkdirSync(path.join(base, '0'), { recursive: true });
+  writeFileSync(path.join(base, '0', 'data.txt'), '合成共享内容\n');
+  for (let level = 1; level <= 14; level += 1) {
+    const directory = path.join(base, String(level));
+    mkdirSync(directory);
+    for (const alias of ['left', 'right']) symlinkSync(`../${level - 1}`, path.join(directory, alias));
+  }
+}
+
+test('资源：共享目录 DAG 在累计预算处明确拒绝，两种扫描均不静默通过', () => {
+  withTemp(root => {
+    createSharedDag(root);
+    for (const check of [checkTextFiles, checkMarkdownLinks]) {
+      const errors = check(root);
+      assert.equal(errors.length, 1);
+      assert.match(errors[0], /资源遍历超过累计工作预算（10000 项）/u);
+      assert.doesNotMatch(errors[0], /循环/u);
+    }
+  });
+});
+
+test('安装：实际复制共享 DAG 也受累计预算保护', () => {
+  withTemp(temporary => {
+    const source = path.join(temporary, 'source');
+    const installed = path.join(temporary, 'installed');
+    createResources(source);
+    createSharedDag(source);
+    assert.throws(() => copySkillResources(source, installed), /资源遍历超过累计工作预算（10000 项）/u);
+    assert.equal(readFileSync(path.join(installed, 'references/dag/0/data.txt'), 'utf8'), '合成共享内容\n');
+  });
+});
+
+test('安装：小型内部别名保留相对链接语义，并实际复制为目录', () => {
+  withTemp(temporary => {
+    const source = path.join(temporary, 'source');
+    const installed = path.join(temporary, 'installed');
+    createResources(source);
+    mkdirSync(path.join(source, 'references/shared'));
+    writeFileSync(path.join(source, 'references/shared/guide.md'), '[上级资源](../target.txt)\n');
+    writeFileSync(path.join(source, 'references/target.txt'), '资源\n');
+    symlinkSync('../references/shared', path.join(source, 'examples/alias'));
+    assert.deepEqual(checkTextFiles(source), []);
+    assert.deepEqual(checkMarkdownLinks(source), ['examples/alias/guide.md: 找不到资源链接：../target.txt']);
+    writeFileSync(path.join(source, 'examples/target.txt'), '别名资源\n');
+    copySkillResources(source, installed);
+    assert.equal(lstatSync(path.join(installed, 'examples/alias')).isDirectory(), true);
+    assert.equal(readFileSync(path.join(installed, 'examples/alias/guide.md'), 'utf8'), '[上级资源](../target.txt)\n');
+    assert.deepEqual(checkMarkdownLinks(installed), []);
+    assert.deepEqual(checkTextFiles(installed), []);
+  });
+});
+
+test('链接：64 KiB 未闭合方括号后仍检查内层链接，保留嵌套和转义语义', () => {
+  withTemp(root => {
+    writeFileSync(path.join(root, 'guide.md'), '['.repeat(64 * 1024) + '[内层](missing.md)\n');
+    const result = spawnSync(process.execPath, ['--input-type=module', '-e',
+      'const { checkMarkdownLinks } = await import(process.argv[1]); console.log(JSON.stringify(checkMarkdownLinks(process.argv[2])));',
+      pathToFileURL(INSTALLER).href, root], { encoding: 'utf8', timeout: 15_000 });
+    assert.equal(result.error, undefined);
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(JSON.parse(result.stdout), ['guide.md: 找不到资源链接：missing.md']);
+    writeFileSync(path.join(root, 'guide.md'), '[外层 [内层]](outer.md)\n[未闭合 [内层](inner.md)\n[转义\\]方括号](escaped.md)\n[![图片](image.md)](wrapped.md)\n');
+    const errors = checkMarkdownLinks(root);
+    assert.equal(errors.length, 4);
+    for (const target of ['outer.md', 'inner.md', 'escaped.md', 'wrapped.md']) {
+      assert.ok(errors.some(error => error.endsWith(target)), target);
+    }
+  });
+});
+
+for (const [name, large, small] of [
+  ['未闭合目的地', '[x]('.repeat(16384), '[x]('.repeat(4)],
+  ['重叠嵌套标签', '['.repeat(65536) + ']'.repeat(65536), '[[[[]]]]'],
+]) {
+  test(`链接：${name}超过工作预算明确拒绝，小型控制仍可用`, () => {
+    withTemp(root => {
+      writeFileSync(path.join(root, 'guide.md'), large);
+      const result = spawnSync(process.execPath, ['--input-type=module', '-e',
+        'const { checkMarkdownLinks } = await import(process.argv[1]); console.log(JSON.stringify(checkMarkdownLinks(process.argv[2])));',
+        pathToFileURL(INSTALLER).href, root], { encoding: 'utf8', timeout: 15_000 });
+      assert.equal(result.error, undefined);
+      assert.equal(result.status, 0, result.stderr);
+      assert.deepEqual(JSON.parse(result.stdout), ['guide.md: Markdown 扫描超过累计工作预算（1048576 单位）']);
+      writeFileSync(path.join(root, 'guide.md'), small);
+      assert.deepEqual(checkMarkdownLinks(root), []);
+    });
+  });
+}
+
+test('链接：累计工作恰等预算通过，多一次空白扫描即拒绝，文件长度相同', () => {
+  withTemp(root => {
+    const padding = (1048576 - 16) / 3;
+    const exact = '[xx]' + 'a'.repeat(padding);
+    const over = '[xx] ' + 'a'.repeat(padding - 1);
+    assert.equal(exact.length, over.length);
+    assert.equal(3 * exact.length + 2 + 2, 1048576);
+    writeFileSync(path.join(root, 'guide.md'), exact);
+    assert.deepEqual(checkMarkdownLinks(root), []);
+    writeFileSync(path.join(root, 'guide.md'), over);
+    assert.deepEqual(checkMarkdownLinks(root), ['guide.md: Markdown 扫描超过累计工作预算（1048576 单位）']);
+  });
+});
+
+test('安装：两类 Markdown 工作超限均拒绝，不执行安装副本命令', async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'ste-install-markdown-budget-'));
+  let calls = 0;
+  try {
+    createResources(root);
+    for (const text of ['[x]('.repeat(16384), '['.repeat(65536) + ']'.repeat(65536)]) {
+      writeFileSync(path.join(root, 'guide.md'), text);
+      await assert.rejects(checkInstall(root, { runner: async () => { calls += 1; } }),
+        /guide\.md: Markdown 扫描超过累计工作预算（1048576 单位）/u);
+    }
+    assert.equal(calls, 0);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
 
 test('版本：检查器接受 Node.js 22.0 和更新主版本', () => {
   assert.equal(checkNodeVersion('22.0.0'), '22.0.0');

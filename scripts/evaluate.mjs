@@ -10,17 +10,23 @@ import { performance } from 'node:perf_hooks';
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const ROOT = resolve(dirname(SCRIPT_PATH), '..');
-const INVARIANT_KEYS = new Set(['contains', 'forbidden', 'any_contains', 'equals_input', 'not_equals', 'requires_list']);
+const INVARIANT_KEYS = new Set(['contains', 'forbidden', 'forbidden_line_prefix', 'any_contains', 'equals_input', 'not_equals', 'requires_list']);
 const CASE_KEYS = new Set(['id', 'description', 'text_type', 'request', 'source', 'human_review', 'invariants', 'prompt_variant']);
 const RESPONSE_KEYS = new Set(['case_id', 'response', 'source', 'stderr']);
 export const LIMITS = Object.freeze({ inputBytes: 4 * 1024 * 1024, jsonDepth: 16, cases: 256,
   promptBytes: 8 * 1024 * 1024, batchPromptBytes: 32 * 1024 * 1024,
+  invariantParts: 4096, invariantWork: 16 * 1024 * 1024,
   streamBytes: 1024 * 1024, batchOutputBytes: 16 * 1024 * 1024, cleanupMs: 100 });
+const BLOCK_SEPARATOR = /^ {0,3}(?:-(?:[ \t]*-){2,}|\*(?:[ \t]*\*){2,}|_(?:[ \t]*_){2,})[ \t]*$/u;
 // 与既有评测记录一致：空白集合不包含 BOM，包含 Python 的控制空白。
 const SPACE = '[\\t\\n\\v\\f\\r\\u001c-\\u0020\\u0085\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000]';
 const TRIM_START = new RegExp(`^${SPACE}+`, 'u');
-const TRIM_END = new RegExp(`${SPACE}+$`, 'u');
-const trim = text => text.replace(TRIM_START, '').replace(TRIM_END, '');
+const SPACE_CHARACTER = new RegExp(`^${SPACE}$`, 'u');
+const trim = text => {
+  let end = text.length;
+  while (end > 0 && SPACE_CHARACTER.test(text[end - 1])) end -= 1;
+  return text.slice(0, end).replace(TRIM_START, '');
+};
 const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const utcNow = () => new Date().toISOString().replace(/(\.\d{3})Z$/u, '$1000+00:00');
 
@@ -115,9 +121,20 @@ function validateInvariants(item) {
   if (!isObject(invariants) || Object.keys(invariants).some(key => !INVARIANT_KEYS.has(key))) {
     throw new EvaluationError(`案例 ${item.id} 的 invariants 字段无效。`);
   }
+  let parts = 0;
+  let characters = 0;
   for (const [key, value] of Object.entries(invariants)) {
+    if (Array.isArray(value)) {
+      parts += value.length;
+      if (parts > LIMITS.invariantParts) throw new EvaluationError(`案例 ${item.id} 的约束片段总数不能超过 ${LIMITS.invariantParts}。`);
+    }
     const valid = key === 'equals_input' || key === 'requires_list' ? typeof value === 'boolean'
-      : Array.isArray(value) && value.length && value.every(part => validText(part) && part.length);
+      : Array.isArray(value) && value.length && Array.from(value).every(part => {
+        if (!validText(part) || !part.length) return false;
+        characters += part.length;
+        if (characters > LIMITS.invariantWork) throw new EvaluationError(`案例 ${item.id} 的约束总工作量超过 ${LIMITS.invariantWork} 单位。`);
+        return true;
+      });
     if (!valid) throw new EvaluationError(`案例 ${item.id} 的约束 ${key} 无效。`);
   }
   return invariants;
@@ -160,26 +177,32 @@ export function loadCases(path, selected = []) {
   return cases.filter(item => !selected.length || selected.includes(item.id));
 }
 
-export function makePrompt(skill, item) {
+export function makePrompt(skill, item, resources = []) {
   validateCase(item);
   if (!validString(skill)) throw new EvaluationError('技能必须是有效 Unicode 非空字符串。');
+  if (!Array.isArray(resources) || resources.some(resource => !isObject(resource)
+      || !validString(resource.path) || !validString(resource.content))) {
+    throw new EvaluationError('补充资料必须提供有效 Unicode 非空路径和正文。');
+  }
+  const supplement = resources.map(resource => `\n补充资料开始：${resource.path}\n${resource.content}\n补充资料结束。\n`).join('');
   if (item.prompt_variant === 'unmarked-user-message') {
-    return `以下为完整技能和用户消息。\n技能开始：\n${skill}\n技能结束。\n\n用户消息：\n${item.request}\n${item.source}\n`;
+    return `以下为完整技能和用户消息。\n技能开始：\n${skill}\n技能结束。\n${supplement}\n用户消息：\n${item.request}\n${item.source}\n`;
   }
   let boundary = `STE_SOURCE_${sha256(skill + canonicalJson(item))}`;
   while (item.source.includes(boundary)) boundary += '_DATA';
-  return `以下为完整技能、用户请求和独立标示的待改写原文数据。\n技能开始：\n${skill}\n技能结束。\n\n用户请求：${item.request}\n本案例文本类型：${item.text_type}\n${boundary}_BEGIN\n${item.source}\n${boundary}_END\n`;
+  return `以下为完整技能、用户请求和独立标示的待改写原文数据。\n技能开始：\n${skill}\n技能结束。\n${supplement}\n用户请求：${item.request}\n本案例文本类型：${item.text_type}\n${boundary}_BEGIN\n${item.source}\n${boundary}_END\n`;
 }
 
-function listItemCount(response) {
+function listItemCount(responseLines) {
   let fence = null;
-  const lines = response.split(/\r\n|\r|\n/u).map(line => {
+  const lines = responseLines.map(line => {
     const marker = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/u);
     if (fence) {
       if (marker && marker[1][0] === fence.character && marker[1].length >= fence.length && !trim(marker[2])) fence = null;
       return '';
     }
     if (marker) { fence = { character: marker[1][0], length: marker[1].length }; return ''; }
+    if (BLOCK_SEPARATOR.test(line)) return '';
     return line;
   });
   const text = lines.join('\n');
@@ -206,22 +229,33 @@ function listItemCount(response) {
 }
 
 export function checkInvariants(item, response) {
+  const invariants = validateInvariants(item);
+  let work = response.length + 1;
+  for (const [key, value] of Object.entries(invariants)) {
+    if (Array.isArray(value)) {
+      for (const part of value) work += (response.length + 1) * part.length;
+    } else if (value) work += response.length + 1 + (key === 'equals_input' ? item.source.length : 0);
+  }
+  if (work > LIMITS.invariantWork) throw new EvaluationError(`案例 ${item.id} 的约束总工作量超过 ${LIMITS.invariantWork} 单位。`);
   const stripped = trim(response);
   const checks = [{ name: 'response-nonempty', passed: Boolean(stripped) }];
-  const invariants = validateInvariants(item);
+  const lines = invariants.requires_list || invariants.forbidden_line_prefix ? response.split(/\r\n|\r|\n/u) : null;
+  const prefixLines = invariants.forbidden_line_prefix ? lines.map(line => line.trimStart()) : null;
   for (const [key, value] of Object.entries(invariants)) {
     if (key === 'equals_input') {
       if (value) checks.push({ name: key, passed: stripped === trim(item.source) });
     } else if (key === 'requires_list') {
       if (value) {
-        const count = listItemCount(response);
+        const count = listItemCount(lines);
         checks.push({ name: key, minimum_items: 3, observed_items: count, passed: count >= 3 });
       }
     } else if (key === 'any_contains') {
       checks.push({ name: key, expected: value, passed: value.some(part => response.includes(part)) });
     } else for (const part of value) {
       const passed = key === 'contains' ? response.includes(part)
-        : key === 'forbidden' ? !response.includes(part) : stripped !== part;
+        : key === 'forbidden' ? !response.includes(part)
+          : key === 'forbidden_line_prefix' ? !prefixLines.some(line => line.startsWith(part))
+            : stripped !== part;
       checks.push({ name: key, expected: part, passed });
     }
   }
@@ -397,13 +431,13 @@ export function loadResponses(path, cases) {
   return responses;
 }
 
-export async function evaluate(cases, skill, model, { command = null, imported = null, timeout = 120 } = {}) {
+export async function evaluate(cases, skill, model, { command = null, imported = null, timeout = 120, resources = [] } = {}) {
   validateCases(cases);
   if (!validString(model)) throw new EvaluationError('模型标识必须是有效 Unicode 非空字符串。');
   const prompts = [];
   let promptBytes = 0;
   for (const item of cases) {
-    const prompt = makePrompt(skill, item);
+    const prompt = makePrompt(skill, item, resources);
     const size = Buffer.byteLength(prompt, 'utf8');
     promptBytes += size;
     if (size > LIMITS.promptBytes || promptBytes > LIMITS.batchPromptBytes) {
@@ -445,6 +479,7 @@ export async function evaluate(cases, skill, model, { command = null, imported =
     const checks = checkInvariants(item, execution.stdout);
     results.push({ case_id: item.id, description: item.description, text_type: item.text_type, model,
       case_sha256: sha256(canonicalJson(item)), skill_sha256: sha256(skill), prompt_sha256: sha256(prompt), prompt,
+      reference_files: resources.map(resource => ({ path: resource.path, sha256: sha256(resource.content) })),
       context_origin: command !== null ? 'submitted-to-adapter' : 'reconstructed-for-checking', provenance, ...execution,
       automatic_checks: checks, automatic_passed: execution.operation_error === null && checks.every(check => check.passed),
       human_review: { status: 'pending', dimensions: item.human_review } });
@@ -525,12 +560,12 @@ function resolvedPath(path) {
 function protectInputs(output, inputs) {
   const target = resolvedPath(output);
   for (const input of inputs) {
-    if (target === resolvedPath(input)) throw new EvaluationError('报告路径不能覆盖技能、案例或导入响应文件。');
+    if (target === resolvedPath(input)) throw new EvaluationError('报告路径不能覆盖技能、补充资料、案例或导入响应文件。');
     try {
       const outputStat = statSync(output, { bigint: true });
       const inputStat = statSync(input, { bigint: true });
       if (outputStat.dev === inputStat.dev && outputStat.ino === inputStat.ino) {
-        throw new EvaluationError('报告路径不能覆盖技能、案例或导入响应文件。');
+        throw new EvaluationError('报告路径不能覆盖技能、补充资料、案例或导入响应文件。');
       }
     } catch (error) {
       if (error instanceof EvaluationError) throw error;
@@ -564,7 +599,7 @@ function saveReport(output, report, inputs, inputStats) {
     if (pathInfo.dev !== target.dev || pathInfo.ino !== target.ino) throw new EvaluationError('报告路径在保存期间发生变化。');
     const identities = [...inputStats, ...inputs.map(input => statSync(input, { bigint: true }))];
     if (identities.some(input => input.dev === target.dev && input.ino === target.ino)) {
-      throw new EvaluationError('报告路径不能覆盖技能、案例或导入响应文件。');
+      throw new EvaluationError('报告路径不能覆盖技能、补充资料、案例或导入响应文件。');
     }
     const content = `${JSON.stringify(report, null, 2)}\n`;
     ftruncateSync(descriptor, 0);
@@ -595,11 +630,20 @@ export async function main(argv = process.argv.slice(2)) {
     try { skill = readUtf8(options.skill); }
     catch (error) { throw new EvaluationError(`无法读取技能：${error.message}`); }
     if (!trim(skill)) throw new EvaluationError('技能文件不能为空。');
+    const resources = [];
+    if (/\[[^\]\n]+\]\(references\/chinese-writing-rules\.md\)/u.test(skill)) {
+      const path = resolve(dirname(resolve(options.skill)), 'references/chinese-writing-rules.md');
+      inputs.push(path);
+      protectInputs(options.output, inputs);
+      const content = readUtf8(path);
+      if (!trim(content)) throw new EvaluationError('中文参考文件不能为空。');
+      resources.push({ path: 'references/chinese-writing-rules.md', content });
+    }
     const imported = options.importedPath === null ? null : loadResponses(options.importedPath, cases);
     let inputStats;
     try { inputStats = inputs.map(input => statSync(input, { bigint: true })); }
     catch { throw new EvaluationError('无法读取输入文件身份信息；文件可能已被删除或替换。'); }
-    const [report, code] = await evaluate(cases, skill, options.model, { command: options.command, imported, timeout: options.timeout });
+    const [report, code] = await evaluate(cases, skill, options.model, { command: options.command, imported, timeout: options.timeout, resources });
     // 适配器执行期间路径可能改变，写报告前再次保护输入文件。
     protectInputs(options.output, inputs);
     saveReport(options.output, report, inputs, inputStats);

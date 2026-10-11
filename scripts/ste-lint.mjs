@@ -54,21 +54,27 @@ function compatibleRegex(source, flags = '') {
 }
 
 const TRIM_START = compatibleRegex(String.raw`^\s+`);
-const TRIM_END = compatibleRegex(String.raw`\s+$`);
+const SPACE_CHARACTER = compatibleRegex(String.raw`^\s$`);
 const trimStart = text => text.replace(TRIM_START, '');
-const trim = text => trimStart(text).replace(TRIM_END, '');
+const trim = text => {
+  let end = text.length;
+  while (end > 0 && SPACE_CHARACTER.test(text[end - 1])) end -= 1;
+  return trimStart(text.slice(0, end));
+};
 const codepointLength = text => [...text].length;
 const CODE_OPERAND = '\ufffc';
-const INLINE_CODE = /(?<!`)(`+)(?!`)(.+?)(?<!`)\1(?!`)/gu;
+const BACKTICK_RUN = /`+/gu;
 const CODE_FENCE = /^(?<marker>`{3,}|~{3,})(?<tail>.*)$/u;
+const BLANK_LINE = /^[ \t]*$/u;
 const LIST_ITEM_START = /^(?<indent> {0,3})(?<marker>[-*+]|[0-9]+[.)])(?<gap> +)(?<body>.*)$/u;
-const TABLE_SEPARATOR_CELL = /^:?-{3,}:?$/u;
+const TABLE_SEPARATOR_CELL = /^:?-+:?$/u;
 const CONJUNCTION_END = compatibleRegex(String.raw`\b(?:and|or)\s*$`, 'i');
-const MODAL_END = compatibleRegex(String.raw`\b(?:may|might|could|should|would|must|can|will|shall)(?:n't)?(?:\s+(?:not|never|also|already|just|only|even|still|yet|ever|well|perhaps|\w+ly))*\s*$`, 'i');
+const MODAL_BEFORE_HAVE = compatibleRegex(String.raw`\b(?:may|might|could|should|would|must|can|will|shall)(?:n't)?(?:\s+(?:not|never|also|already|just|even|still|yet|ever|well|perhaps|\w+ly))*\s*(?=have\b)`, 'ig');
 const ABBREVIATION_END = compatibleRegex(String.raw`(?:\b(?:[A-Za-z]\.){2,}|\b(?:Mr|Mrs|Ms|Dr|Prof|Sr|Jr|vs|etc|Fig|No)\.)$`, 'i');
 const WORD_TOKEN = compatibleRegex(String.raw`[^\s\ufffc]+`, 'g');
-const BLOCK_SEPARATOR = compatibleRegex(String.raw`^ {0,3}(?:(?:\* *){3,}|(?:- *){3,}|(?:_ *){3,}|=+)\s*$`);
-const HEADING = /^ {0,3}#{1,6}(?: +|$)/u;
+const BLOCK_SEPARATOR = /^ {0,3}(?:-(?:[ \t]*-){2,}|\*(?:[ \t]*\*){2,}|_(?:[ \t]*_){2,})[ \t]*$/u;
+const SETEXT_UNDERLINE = /^ {0,3}(?:=+|-+)[ \t]*$/u;
+const HEADING = /^ {0,3}#{1,6}(?:[ \t]+|$)/u;
 const SENTENCE_BOUNDARY = compatibleRegex(String.raw`(?<=[.!?])["'”’)\]}]*\s+`, 'g');
 const TEXT_LIMITS = Object.freeze({ instruction: 20, description: 25 });
 const SCHEMA_VERSION = 1;
@@ -94,9 +100,11 @@ const ZH_PARAGRAPH_SENTENCE_TARGET = 6;
 
 // 中文规范按汉字与西文词计数；句长上限为项目适配值，与英文词数上限不是换算关系。
 const TEXT_LIMITS_ZH = Object.freeze({ instruction: 20, description: 30 });
-const ZH_CONJUNCTION_END = /(?:和|或|以及|并且|或者|同时)\s*$/u;
+const ZH_CONJUNCTION_END = compatibleRegex(String.raw`(?:和|或|以及|并且|或者|同时)\s*$`);
 const HAN_CHARACTER = /\p{Script=Han}/u;
+const HAN_VARIATION_SELECTOR = /^[\uFE00-\uFE0F\u{E0100}-\u{E01EF}]$/u;
 const TOKEN_CHARACTER = /[\p{L}\p{N}\p{M}]/u;
+const DECIMAL_DIGIT = /^\p{Nd}$/u;
 const ZH_TOKEN = /[\p{L}\p{N}\p{M}]/gu;
 const ZH_SENTENCE_TERMINATOR = /[。！？]/u;
 const ZH_SENTENCE_CLOSER = new Set(['”', '’', '」', '』', '）', ')', ']', '】', '》']);
@@ -113,10 +121,18 @@ function countTokensZh(text) {
   let first = -1;
   for (const match of matches(ZH_TOKEN, text)) {
     const offset = match.index;
-    const previous = offset > 0 ? text[offset - 1] : '';
+    let previous = [...text.slice(Math.max(0, offset - 2), offset)].at(-1) ?? '';
+    if (HAN_VARIATION_SELECTOR.test(match[0]) && HAN_CHARACTER.test(previous)) continue;
+    if (HAN_VARIATION_SELECTOR.test(previous)) {
+      const base = [...text.slice(Math.max(0, offset - 4), offset - previous.length)].at(-1) ?? '';
+      if (HAN_CHARACTER.test(base)) previous = base;
+    }
+    const continuesNumber = previous === '.'
+      && DECIMAL_DIGIT.test([...text.slice(Math.max(0, offset - 3), offset - 1)].at(-1) ?? '')
+      && DECIMAL_DIGIT.test(match[0]);
     // 汉字逐个计；西文串只在它不是紧跟在同类字符之后时计 1。
     if (HAN_CHARACTER.test(match[0])
-      || previous === '' || !TOKEN_CHARACTER.test(previous) || HAN_CHARACTER.test(previous)) {
+      || previous === '' || (!TOKEN_CHARACTER.test(previous) && !continuesNumber) || HAN_CHARACTER.test(previous)) {
       if (first < 0) first = offset;
       count += 1;
     }
@@ -177,70 +193,93 @@ function maskInlineCode(text, positions = Array.from({ length: text.length }, (_
   let masked = '';
   const mapped = [];
   let previous = 0;
-  for (const match of matches(INLINE_CODE, text)) {
-    masked += text.slice(previous, match.index);
-    for (let index = previous; index < match.index; index += 1) mapped.push(positions[index]);
-    let index = match.index;
-    for (const character of match[0]) {
+  const runs = [...matches(BACKTICK_RUN, text)];
+  const closingIndexes = new Array(runs.length);
+  const escapedClosingIndexes = new Array(runs.length);
+  const nextByLength = new Map();
+  for (let runIndex = runs.length - 1; runIndex >= 0; runIndex -= 1) {
+    const length = runs[runIndex][0].length;
+    closingIndexes[runIndex] = nextByLength.get(length) ?? -1;
+    escapedClosingIndexes[runIndex] = nextByLength.get(length - 1) ?? -1;
+    nextByLength.set(length, runIndex);
+  }
+  for (let runIndex = 0; runIndex < runs.length; runIndex += 1) {
+    const opening = runs[runIndex];
+    let escapes = 0;
+    while (text[opening.index - escapes - 1] === "\\") escapes += 1;
+    const markerLength = opening[0].length - escapes % 2;
+    if (!markerLength) continue;
+    const closingIndex = (escapes % 2 ? escapedClosingIndexes : closingIndexes)[runIndex];
+    if (closingIndex < 0) continue;
+    const start = opening.index + escapes % 2;
+    const end = runs[closingIndex].index + markerLength;
+    masked += text.slice(previous, start);
+    for (let index = previous; index < start; index += 1) mapped.push(positions[index]);
+    let index = start;
+    for (const character of text.slice(start, end)) {
       masked += CODE_OPERAND;
       mapped.push(positions[index]);
       index += character.length;
     }
-    previous = match.index + match[0].length;
+    previous = end;
+    runIndex = closingIndex;
   }
   masked += text.slice(previous);
   for (let index = previous; index < positions.length; index += 1) mapped.push(positions[index]);
   return [masked, mapped];
 }
 
-const leadingSpaces = line => line.length - line.replace(/^ +/u, '').length;
+function indentation(line) {
+  let length = 0;
+  let width = 0;
+  while (line[length] === ' ' || line[length] === '\t') {
+    width += line[length] === '\t' ? 4 - width % 4 : 1;
+    length += 1;
+  }
+  return { length, width };
+}
+
+function trimAscii(text) {
+  let end = text.length;
+  while (end > 0 && (text[end - 1] === ' ' || text[end - 1] === '\t')) end -= 1;
+  return text.slice(0, end).replace(/^[ \t]+/u, '');
+}
+
+function isEscaped(text, index) {
+  let backslashes = 0;
+  while (index > 0 && text[index - 1] === '\\') {
+    backslashes += 1;
+    index -= 1;
+  }
+  return backslashes % 2 === 1;
+}
 
 function splitTableRow(line) {
-  let left = codepointLength(line) - codepointLength(trimStart(line));
-  let content = trim(line);
+  let left = line.length - line.replace(/^[ \t]+/u, '').length;
+  let content = trimAscii(line);
   if (!content.includes('|')) return null;
-  const hasOuterPipe = content.startsWith('|') || (content.endsWith('|') && !content.endsWith('\\|'));
+  const endsWithPipe = content.endsWith('|') && !isEscaped(content, content.length - 1);
+  const hasOuterPipe = content.startsWith('|') || endsWithPipe;
   if (content.startsWith('|')) {
     content = content.slice(1);
     left += 1;
   }
-  if (content.endsWith('|') && !content.endsWith('\\|')) content = content.slice(0, -1);
+  if (endsWithPipe) content = content.slice(0, -1);
   const [masked, offsets] = maskInlineCode(content);
-  const cuts = [...matches(/(?<!\\)\|/gu, masked)].map(match => offsets[match.index]);
+  const cuts = [...matches(/\|/gu, masked)]
+    .filter(match => !isEscaped(masked, match.index)).map(match => offsets[match.index]);
   if (!cuts.length && !hasOuterPipe) return null;
   const cells = [];
   let start = 0;
+  let column = left;
   for (const end of [...cuts, content.length]) {
     const raw = content.slice(start, end);
-    const leading = codepointLength(raw) - codepointLength(trimStart(raw));
-    cells.push([trim(raw), left + codepointLength(content.slice(0, start)) + leading]);
+    const leading = raw.length - raw.replace(/^[ \t]+/u, '').length;
+    cells.push([trimAscii(raw), column + leading]);
+    column += codepointLength(raw) + 1;
     start = end + 1;
   }
   return cells;
-}
-
-function markdownTableCells(lines) {
-  const result = new Map();
-  let index = 1;
-  while (index < lines.length) {
-    const separator = splitTableRow(lines[index]);
-    const header = splitTableRow(lines[index - 1]);
-    if (!separator || !header || separator.length !== header.length
-        || !separator.every(([cell]) => TABLE_SEPARATOR_CELL.test(cell))) {
-      index += 1;
-      continue;
-    }
-    result.set(index - 1, header);
-    result.set(index, []);
-    index += 1;
-    while (index < lines.length) {
-      const row = splitTableRow(lines[index]);
-      if (!row || row.length !== separator.length) break;
-      result.set(index, row);
-      index += 1;
-    }
-  }
-  return result;
 }
 
 function splitLines(text) {
@@ -252,12 +291,12 @@ function splitLines(text) {
 
 function segmentsFor(text) {
   const lines = splitLines(text);
-  const tableCells = markdownTableCells(lines);
   const segments = [];
   const items = [];
   let current = null;
   let activeItem = null;
   let fence = null;
+  let tableWidth = null;
   const flush = () => {
     if (current !== null && trim(current.text)) {
       [current.text, current.positions] = maskInlineCode(current.text, current.positions);
@@ -269,72 +308,112 @@ function segmentsFor(text) {
   for (let index = 0; index < lines.length; index += 1) {
     const raw = lines[index];
     const line = index + 1;
-    const indent = leadingSpaces(raw);
-    const stripped = raw.slice(indent);
+    const { length: indentLength, width: indent } = indentation(raw);
+    const blank = BLANK_LINE.test(raw);
+    const stripped = raw.slice(indentLength);
     const fenceMatch = CODE_FENCE.exec(stripped);
     if (fence !== null) {
-      if (fenceMatch && fenceMatch.groups.marker[0] === fence[0]
-          && fenceMatch.groups.marker.length >= fence[1] && !trim(fenceMatch.groups.tail)
-          && indent <= fence[2] + 3) fence = null;
-      continue;
+      if (fence[2] > 0 && !blank && indent < fence[2]) {
+        fence = null;
+        activeItem = null;
+      } else {
+        if (fenceMatch && fenceMatch.groups.marker[0] === fence[0]
+            && fenceMatch.groups.marker.length >= fence[1] && BLANK_LINE.test(fenceMatch.groups.tail)
+            && indent <= fence[2] + 3) fence = null;
+        continue;
+      }
+    }
+    if (!blank && activeItem !== null && indent < items[activeItem].contentIndent) {
+      if (current !== null && current.listId === activeItem) flush();
+      activeItem = null;
+      tableWidth = null;
     }
     const fenceIndent = activeItem === null ? 0 : items[activeItem].contentIndent;
     if (fenceMatch && indent <= fenceIndent + 3
         && (fenceMatch.groups.marker[0] !== '`' || !fenceMatch.groups.tail.includes('`'))) {
       flush();
+      tableWidth = null;
       fence = [fenceMatch.groups.marker[0], fenceMatch.groups.marker.length, indent >= fenceIndent ? fenceIndent : 0];
       continue;
     }
-    if (!trim(raw)) {
+    if (blank) {
       flush();
+      tableWidth = null;
       continue;
     }
-    const start = LIST_ITEM_START.exec(raw);
-    const continuation = activeItem !== null && !start && indent >= items[activeItem].contentIndent;
+    const itemContinuation = activeItem !== null && indent >= items[activeItem].contentIndent;
+    const blockIndent = itemContinuation ? indent - items[activeItem].contentIndent : indent;
+    const heading = blockIndent <= 3 ? HEADING.exec(stripped) : null;
+    const separatorBlock = blockIndent <= 3 &&
+      (BLOCK_SEPARATOR.test(stripped) || (current !== null && current.listId === activeItem
+        && SETEXT_UNDERLINE.test(stripped)));
+    let start = heading || separatorBlock ? null : LIST_ITEM_START.exec(raw);
+    if (start && current !== null && current.listId === null
+        && (BLANK_LINE.test(start.groups.body)
+          || (/^[0-9]/u.test(start.groups.marker) && !/^0*1[.)]$/u.test(start.groups.marker)))) start = null;
+    const continuation = itemContinuation && !start;
     if (!continuation) activeItem = null;
     const codeIndent = continuation ? items[activeItem].contentIndent + 4 : 4;
-    if (indent >= codeIndent || raw.startsWith('\t')) {
+    const indented = indent >= codeIndent;
+    const row = (!indented || tableWidth !== null) && !start && !heading && !separatorBlock
+      ? splitTableRow(raw) : null;
+    if (!row || row.length !== tableWidth) tableWidth = null;
+    if (row && !indented && tableWidth === null && index + 1 < lines.length) {
+      const next = lines[index + 1];
+      const nextIndent = indentation(next).width;
+      const minIndent = activeItem === null ? 0 : items[activeItem].contentIndent;
+      const separator = nextIndent >= minIndent && nextIndent < codeIndent && !LIST_ITEM_START.test(next)
+        ? splitTableRow(next) : null;
+      if (separator && separator.length === row.length
+          && separator.every(([cell]) => TABLE_SEPARATOR_CELL.test(cell))) {
+        tableWidth = row.length;
+        index += 1;
+      }
+    }
+    if (indented && current === null && tableWidth === null) {
       flush();
       continue;
     }
-    if (tableCells.has(index)) {
+    if (tableWidth !== null) {
       flush();
-      for (const [cell, column] of tableCells.get(index)) {
+      for (const [cell, column] of row) {
         const segment = new Segment(activeItem);
         segment.append(cell, line, column + 1);
         [segment.text, segment.positions] = maskInlineCode(segment.text, segment.positions);
         segments.push(segment);
-        if (activeItem !== null) items[activeItem].segments.push(segment);
+        if (activeItem !== null && trim(segment.text)) items[activeItem].segments.push(segment);
       }
       continue;
     }
-    if (BLOCK_SEPARATOR.test(raw)) {
+    if (separatorBlock) {
       flush();
       continue;
     }
-    const heading = HEADING.exec(raw);
     let body;
     let column;
     if (start) {
       flush();
       activeItem = items.length;
-      const bodyIndex = start.groups.indent.length + start.groups.marker.length + start.groups.gap.length;
-      items.push({ markerPosition: [line, start.groups.indent.length + 1], contentIndent: bodyIndex, segments: [] });
-      current = new Segment(activeItem);
       body = start.groups.body;
+      const emptyBody = BLANK_LINE.test(body);
+      const bodyIndex = start.groups.indent.length + start.groups.marker.length
+        + (emptyBody ? 1 : start.groups.gap.length);
+      items.push({ markerPosition: [line, start.groups.indent.length + 1], contentIndent: bodyIndex, segments: [] });
+      if (emptyBody) continue;
+      current = new Segment(activeItem);
       column = bodyIndex + 1;
     } else if (heading) {
       flush();
-      body = raw.slice(heading[0].length);
-      column = heading[0].length + 1;
-      current = new Segment();
+      body = stripped.slice(heading[0].length);
+      column = indentLength + heading[0].length + 1;
+      current = new Segment(activeItem);
     } else {
       if (current === null || current.listId !== activeItem) {
         flush();
         current = new Segment(activeItem);
       }
-      body = raw.slice(indent);
-      column = indent + 1;
+      body = trimStart(raw);
+      column = codepointLength(raw) - codepointLength(body) + 1;
     }
     current.append(body, line, column);
     if (heading) flush();
@@ -346,8 +425,10 @@ function segmentsFor(text) {
 function regexChecker(pattern, protectModal = false) {
   return function* check(context) {
     for (const segment of context.segments) {
+      const protectedHave = protectModal
+        ? new Set([...matches(MODAL_BEFORE_HAVE, segment.text)].map(match => match.index + match[0].length)) : null;
       for (const match of matches(pattern, segment.text)) {
-        if (protectModal && match[1].toLowerCase() === 'have' && MODAL_END.test(segment.text.slice(0, match.index))) continue;
+        if (protectModal && match[1].toLowerCase() === 'have' && protectedHave.has(match.index)) continue;
         yield { position: segment.positions[match.index], match: match[0] };
       }
     }
@@ -508,8 +589,8 @@ export const RULES_ZH = Object.freeze([
   regexRule('zh-semicolon', 'advisory-free', 'deterministic', '中文正文含分号。请拆分为多个句子。', '代码内容不参与检查。', /[;；]/u),
   new Rule('zh-long-sentence', 'advisory-free', 'deterministic', '句子字数超过中文上限。',
     '按汉字与西文词计数；按 。！？ 及句末闭合引号分句，不实现完整中文语法分析。', checkLongSentences),
-  new Rule('zh-dangling-conjunction', 'advisory-free', 'deterministic', '列表项以连接词结尾。请补全该项，或将它与下一项合并。',
-    '仅支持普通列表标记和按内容缩进的续行；不检查引用内列表。', checkDanglingConjunction),
+  new Rule('zh-dangling-conjunction', 'advisory', 'heuristic', '列表项可能以连接词结尾。确认后再补全该项，或将它与下一项合并。',
+    '后缀匹配无法确定中文词边界，会误报「总和」「饱和」等词；仅支持普通列表标记和按内容缩进的续行，不检查引用内列表。', checkDanglingConjunction),
   new Rule('zh-list-required', 'advisory', 'heuristic', '一段中出现三个或更多要求强度词。建议改为列表。',
     '按要求强度词的完整词形计数，不判断它们是否真的对应不同操作；不识别单字「应」「须」。', checkListRequired),
   new Rule('zh-paragraph-topic', 'advisory', 'heuristic', '段落句子数超过目标上限。请考虑分段或合并。',

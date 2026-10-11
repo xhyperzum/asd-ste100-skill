@@ -39,6 +39,512 @@ function withTemporaryDirectory(callback) {
   }
 }
 
+test('性能：重复 only 的无 have 坏路径在子进程超时内结束', () => {
+  for (const count of [40, 40_000]) {
+    for (const disabled of [[], ['--disable', 'present-perfect']]) {
+      const result = spawnSync(process.execPath, [SCRIPT, '--json', ...disabled], {
+        input: `may${' only'.repeat(count)}`,
+        encoding: 'utf8',
+        timeout: 5_000,
+        killSignal: 'SIGKILL',
+      });
+      assert.ifError(result.error);
+      assert.equal(result.signal, null);
+      assert.equal(result.status, 1);
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.words, count + 1);
+      assert.equal(report.violations.filter(finding => finding.rule === 'present-perfect').length, 0);
+      assert.equal(report.violations.filter(finding => finding.rule === 'long-sentence').length, 1);
+    }
+  }
+});
+
+test('规则：情态完成式保留旧版 288 组前缀范围', () => {
+  const oldModalEnd = /\b(?:may|might|could|should|would|must|can|will|shall)(?:n't)?(?:\s+(?:not|never|also|already|just|only|even|still|yet|ever|well|perhaps|\w+ly))*\s*$/i;
+  const rules = RULES.filter(rule => rule.id === 'present-perfect');
+  let checked = 0;
+  for (const modal of ['may', 'might', 'could', 'should', 'would', 'must', 'can', 'will', 'shall']) {
+    for (const tail of ['', 'not ', 'never also ', 'already just only even still yet ever well perhaps ',
+      'probably '.repeat(100), 'wrong ', '`not` ', 'not, ']) {
+      for (const auxiliary of ['have', 'has', 'had', 'HAVE']) {
+        const text = `It ${modal} ${tail}${auxiliary} failed. We have received.`;
+        const expected = [...text.matchAll(/\b(has|have|had)\s+(?:been\s+)?\w+(?:ed|en)\b/gi)]
+          .filter(match => match[1].toLowerCase() !== 'have' || !oldModalEnd.test(text.slice(0, match.index)))
+          .map(match => [1, match.index + 1]);
+        const actual = lint(text, '<stdin>', 'instruction', rules)[0].map(finding => [finding.line, finding.col]);
+        assert.deepEqual(actual, expected, text);
+        checked += 1;
+      }
+    }
+  }
+  assert.equal(checked, 288);
+});
+
+test('Markdown：列表内标题和分隔块按内容相对缩进且保留归属', () => {
+  assert.equal(lint('- a\n\n    ---')[1], 1);
+  for (const underline of ['-', '--', '---', '=']) {
+    const text = `1.  x and\n    ${underline}`;
+    assert.equal(lint(text)[1], 2, text);
+    assert.equal(findingsFor(text, 'dangling-conjunction').length, 1, text);
+  }
+  assert.deepEqual(findingsFor('- a and\n  # b', 'dangling-conjunction'), []);
+  const dangling = findingsFor('- a\n  # b and', 'dangling-conjunction');
+  assert.equal(dangling.length, 1);
+  assert.deepEqual([dangling[0].line, dangling[0].col], [2, 7]);
+  assert.equal(lint('#\tA')[1], 1);
+  for (const prefix of ['     ', '\t ']) {
+    const text = `100. x\n${prefix}#\tb;`;
+    assert.equal(lint(text)[1], 2);
+    const semicolon = findingsFor(text, 'semicolon');
+    assert.deepEqual(semicolon.map(finding => [finding.line, finding.col]), [[2, prefix.length + 4]]);
+  }
+  for (const code of ['# b and;', '--', '---']) {
+    const text = `- a\n\n      ${code}`;
+    assert.equal(lint(text)[1], 1, text);
+    assert.deepEqual(findingsFor(text, 'semicolon'), []);
+    assert.deepEqual(findingsFor(text, 'dangling-conjunction'), []);
+  }
+  assert.equal(lint('    # A')[1], 0);
+  assert.equal(lint('===')[1], 1);
+});
+
+test('Markdown：表格分隔单元格只去除 ASCII 空格和 Tab', () => {
+  for (const space of ['\u00a0', '\u3000', '\u001f']) {
+    for (const [separator, words] of [[`-${space}|-`, 8], [`-|-${space}`, 7]]) {
+      const text = `a | b\n${separator}\nc | d`;
+      assert.equal(lint(text)[1], words, text);
+    }
+  }
+  assert.equal(lint('a|b\n - \t|\t-\t\nc|d')[1], 4);
+  const text = '| 😀a | b; |\n| - | - |\n| c | d |';
+  assert.equal(lint(text)[1], 4);
+  assert.deepEqual(findingsFor(text, 'semicolon').map(finding => [finding.line, finding.col]), [[1, 9]]);
+});
+
+test('Markdown：表格内外竖线的反斜杠转义按奇偶匹配', () => {
+  for (const count of [1, 2, 3, 4]) {
+    const slashes = '\\'.repeat(count);
+    const separator = count % 2 ? '|-|\n|c|' : '|-|-|\n|c|d|';
+    const text = `| a ${slashes}| b; |\n${separator}`;
+    assert.equal(lint(text)[1], count % 2 ? 4 : 5, text);
+    assert.deepEqual(findingsFor(text, 'semicolon').map(finding => [finding.line, finding.col]), [[1, count + 8]]);
+    assert.equal(lint(`| a${slashes}|\n|-|\n|c|`)[1], 2);
+  }
+  assert.equal(lint('a \\\\| b\n-|-\nc | d')[1], 5);
+  assert.equal(lint('| `a|b` | c |\n|-|-|\n| d | e |')[1], 3);
+});
+
+test('Markdown：相对分隔块优先于列表标记且不丢失条目归属', () => {
+  for (const indent of ['  ', '   ', '    ', '     ', '\t']) {
+    for (const separator of ['- - -', '* * *', '_ _ _', '***']) {
+      const text = `- a\n${indent}${separator}\n  b and`;
+      const findings = findingsFor(text, 'dangling-conjunction');
+      assert.equal(findings.length, 1, text);
+      assert.deepEqual([findings[0].line, findings[0].col], [3, 5]);
+      assert.equal(lint(text)[1], 3);
+    }
+    for (const underline of ['- ', '-\t', '-- ']) {
+      const text = `- x and\n${indent}${underline}\n  z`;
+      assert.deepEqual(findingsFor(text, 'dangling-conjunction'), [], text);
+      assert.equal(lint(text)[1], 3);
+    }
+  }
+  assert.deepEqual(findingsFor('- a\n- - -\nb and', 'dangling-conjunction'), []);
+  assert.equal(findingsFor('- a\n- b and', 'dangling-conjunction').length, 1);
+  assert.equal(lint('- a\n\n      - - -\n  b')[1], 2);
+  for (const [text, status] of [['- a\n  - - -\n  b and', 1], ['- x and\n  - \n  z', 0]]) {
+    const result = runCli(['--json'], text);
+    assert.ifError(result.error);
+    assert.equal(result.status, status);
+  }
+});
+
+test('Markdown：表格预读不吞列表标记且保留正常短分隔行', () => {
+  for (const text of ['| a |\n- |\n  c and', '- x\n  | a |\n  - |\n    c and']) {
+    const findings = findingsFor(text, 'dangling-conjunction');
+    assert.equal(findings.length, 1, text);
+    assert.equal(findings[0].match, '| c and');
+    const result = runCli(['--json'], text);
+    assert.ifError(result.error);
+    assert.equal(result.status, 1);
+  }
+  assert.equal(lint('| a |\n- |\n  c and')[1], 6);
+  for (const separator of ['|-|-|', '-|-', ':-: | :-:']) {
+    assert.equal(lint(`| a | b |\n${separator}\n| c | d |`)[1], 4, separator);
+    assert.equal(lint(`- x\n  | a | b |\n  ${separator}\n  | c | d |`)[1], 5, separator);
+  }
+  assert.equal(lint('- x\n  | a | b |\n|-|-|\n| c | d |')[1], 12);
+});
+
+test('中文：扩展平面字符按码点判断连续串且保留汉字与小数口径', () => {
+  const cases = [['𝐀B', 1], ['𝟏𝟐', 1], ['A𝐁𝟏', 1], ['𝐀\u0301B', 1],
+    ['𠀀A', 2], ['A𠀀', 2], ['𠀀𠀁', 2], ['𠀀𝐀B', 2],
+    ['12', 1], ['A12', 1], ['1.25', 1], ['v2.1.3', 1], ['𝟏.𝟐', 1]];
+  for (const [text, words] of cases) {
+    assert.equal(lint(text, '<stdin>', 'description', null, 'zh')[1], words, text);
+  }
+  for (const text of ['𝐀B', '𝟏𝟐', '𠀀A']) {
+    const result = runCli(['--language', 'zh', '--json'], text);
+    assert.ifError(result.error);
+    assert.equal(result.status, 0);
+    assert.equal(JSON.parse(result.stdout).words, text === '𠀀A' ? 2 : 1);
+  }
+  const position = findingsFor('𝐀B;', 'zh-semicolon', { language: 'zh' });
+  assert.deepEqual(position.map(finding => [finding.line, finding.col]), [[1, 3]]);
+});
+
+test('中文：汉字变体选择符不重复计字且保留西文边界与源位置', () => {
+  const cases = [['丸\uFE00'.repeat(16), 16], ['丸\uFE00A', 2], ['A丸\uFE00B', 3],
+    ['𠀀\uFE00𠀁', 2], ['𠀀\u{E0100}A', 2], ['丸\u{E01EF}A', 2],
+    ['A\u0301B', 1], ['𝐀\u0301B', 1], ['A\uFE00B', 1], ['𝐀\u{E0100}B', 1],
+    ['丸\u0301', 2], ['\uFE00', 1]];
+  for (const [text, words] of cases) {
+    assert.equal(lint(text, '<stdin>', 'description', null, 'zh')[1], words, text);
+  }
+  const result = runCli(['--language', 'zh', '--json'], '丸\uFE00'.repeat(16));
+  assert.ifError(result.error);
+  assert.equal(result.status, 0);
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.words, 16);
+  assert.equal(report.hard_count, 0);
+  assert.ok(!report.violations.some(finding => finding.rule === 'zh-long-sentence'));
+  const positions = findingsFor('丸\uFE00;\n𠀀\u{E0100};', 'zh-semicolon', { language: 'zh' });
+  assert.deepEqual(positions.map(finding => [finding.line, finding.col]), [[1, 3], [2, 3]]);
+  const long = findingsFor(`😀 ${'丸\uFE00'.repeat(31)}。`, 'zh-long-sentence', { language: 'zh' });
+  assert.equal(long.length, 1);
+  assert.deepEqual([long[0].line, long[0].col], [1, 3]);
+  assert.equal(long[0].match, '31 字');
+});
+
+test('中文：Unicode 十进制数字的小数连接不扩大到字母和其他数字类别', () => {
+  const cases = [['𝟏.𝟐', 1], ['１２.３', 1], ['1.𝟐', 1], ['𝟏.2', 1], ['１.2', 1],
+    ['1.２', 1], ['١.٢', 1], ['१२.३', 1], ['3.14', 1], ['v2.1.3', 1],
+    ['𝐀.𝐁', 2], ['𝐀.𝟐', 2], ['𝟏.𝐁', 2], ['①.②', 2], ['Ⅳ.Ⅴ', 2], ['².³', 2],
+    ['一.二', 2], ['𝟏．𝟐', 2], ['1..2', 2], ['1 .2', 2], ['𝟏. 𝟐', 2], ['# 1. 2', 2],
+    ['.', 0], ['. .', 0], ['.𝟏', 1], ['𝟏.', 1]];
+  for (const [text, words] of cases) {
+    assert.equal(lint(text, '<stdin>', 'description', null, 'zh')[1], words, text);
+  }
+  for (const text of ['𝟏.𝟐', '１２.３', '1.𝟐', '𝟏.2', '𝐀.𝐁']) {
+    const result = runCli(['--language', 'zh', '--json'], text);
+    assert.ifError(result.error);
+    assert.equal(result.status, 0);
+    assert.equal(JSON.parse(result.stdout).words, text === '𝐀.𝐁' ? 2 : 1);
+  }
+  const positions = findingsFor('😀 𝟏.𝟐;\n１２.３;', 'zh-semicolon', { language: 'zh' });
+  assert.deepEqual(positions.map(finding => [finding.line, finding.col]), [[1, 6], [2, 5]]);
+  const long = findingsFor(`😀 ${'𝟏.𝟐 '.repeat(21)}。`, 'zh-long-sentence', {
+    language: 'zh', textType: 'instruction',
+  });
+  assert.equal(long.length, 1);
+  assert.deepEqual([long[0].line, long[0].col], [1, 3]);
+  assert.match(long[0].match, /21/u);
+});
+
+test('性能：中文扩展平面小数只读取固定长度前字符窗口', () => {
+  const text = '𝟏.𝟐 '.repeat(32_000);
+  const started = process.cpuUsage();
+  assert.equal(lint(text, '<stdin>', 'description', [], 'zh')[1], 32_000);
+  const elapsed = process.cpuUsage(started);
+  assert.ok(elapsed.user + elapsed.system < 4_000_000, '中文小数计数 CPU 时间超过四秒宽阈值');
+});
+
+test('性能：中文扩展平面计数不重复扫描全文前缀', () => {
+  const text = '𠀀𝐀B'.repeat(32_000);
+  const started = process.cpuUsage();
+  assert.equal(lint(text, '<stdin>', 'description', [], 'zh')[1], 64_000);
+  const elapsed = process.cpuUsage(started);
+  assert.ok(elapsed.user + elapsed.system < 4_000_000, '中文计数 CPU 时间超过四秒宽阈值');
+});
+
+test('Markdown：ASCII 空列表正文不打开段落但保留条目容器', () => {
+  for (const marker of ['- ', '+ \t', '1. ']) {
+    const text = `${marker}\n          a;b`;
+    assert.deepEqual(lint(text), [[], 0], text);
+    assert.equal(lint(`${marker}\n  ===`)[1], 1, marker);
+  }
+  const continuation = findingsFor('- \n  a and', 'dangling-conjunction');
+  assert.equal(continuation.length, 1);
+  assert.equal(continuation[0].match, 'a and');
+  for (const whitespace of ['\u00a0', '\u3000', '\u001f']) {
+    const text = `- ${whitespace}\n          a;b`;
+    assert.equal(lint(text)[1], 1);
+    assert.deepEqual(findingsFor(text, 'semicolon').map(finding => [finding.line, finding.col]), [[2, 12]]);
+    assert.equal(lint(`- ${whitespace}\n  ===`)[1], 0);
+  }
+  assert.deepEqual(lint('- \n\n      a;b'), [[], 0]);
+  assert.equal(lint('- \n  first\n  ===')[1], 1);
+  for (const [text, words] of [['- \n          a;b', 0], ['- \n  ===', 1]]) {
+    const result = runCli(['--json'], text);
+    assert.ifError(result.error);
+    assert.equal(result.status, 0);
+    assert.equal(JSON.parse(result.stdout).words, words);
+  }
+});
+
+test('Markdown：活动表格结束后深缩进行不能复用为新表头', () => {
+  const mismatch = 'a|b\n-|-\n    c;d|e|f\n-|-|-';
+  assert.deepEqual(lint(mismatch), [[], 3]);
+  const matched = 'a|b\n-|-\n    c;d|e\n-|-|-';
+  assert.equal(lint(matched)[1], 5);
+  assert.deepEqual(findingsFor(matched, 'semicolon').map(finding => [finding.line, finding.col]), [[3, 6]]);
+  const normalHeader = 'a|b\n-|-\nc;d|e|f\n-|-|-';
+  assert.equal(lint(normalHeader)[1], 5);
+  assert.deepEqual(findingsFor(normalHeader, 'semicolon').map(finding => [finding.line, finding.col]), [[3, 2]]);
+  const listed = '- x\n  a|b\n  -|-\n      c;d|e|f\n  -|-|-';
+  assert.deepEqual(findingsFor(listed, 'semicolon'), []);
+  const result = runCli(['--json'], mismatch);
+  assert.ifError(result.error);
+  assert.equal(result.status, 0);
+  assert.equal(JSON.parse(result.stdout).words, 3);
+});
+
+test('Unicode：完整既有行界集合按逻辑行定位和划分空行', () => {
+  const boundaries = ['\r\n', '\n', '\r', '\v', '\f', '\u001c', '\u001d', '\u001e',
+    '\u0085', '\u2028', '\u2029'];
+  const half = Array(13).fill('word').join(' ');
+  for (const boundary of boundaries) {
+    const text = `😀a${boundary} b;`;
+    assert.equal(lint(text)[1], 2, JSON.stringify(boundary));
+    assert.deepEqual(findingsFor(text, 'semicolon').map(finding => [finding.line, finding.col]), [[2, 3]]);
+    assert.deepEqual(lint(`${half}${boundary}${boundary}${half}`), [[], 26]);
+    assert.deepEqual(findingsFor(`${half}${boundary}${half}`, 'long-sentence')
+      .map(finding => [finding.line, finding.col]), [[1, 1]]);
+    const fence = `\`\`\`${boundary}bad;${boundary}\`\`\`${boundary}okay;`;
+    assert.deepEqual(findingsFor(fence, 'semicolon').map(finding => [finding.line, finding.col]), [[4, 5]]);
+  }
+  for (const boundary of ['\r\n', '\u2028']) {
+    const result = runCli(['--json'], `a${boundary}b;`);
+    assert.ifError(result.error);
+    assert.equal(result.status, 1);
+    assert.deepEqual(JSON.parse(result.stdout).violations
+      .filter(finding => finding.rule === 'semicolon').map(finding => [finding.line, finding.col]), [[2, 2]]);
+  }
+  assert.deepEqual(findingsFor('- a\u2028- b and', 'dangling-conjunction')
+    .map(finding => [finding.line, finding.col]), [[2, 1]]);
+});
+
+test('既有口径：列表标记范围、悬空定位与英文非空白片段计数', () => {
+  assert.deepEqual(findingsFor('-     a;b', 'semicolon')
+    .map(finding => [finding.line, finding.col]), [[1, 8]]);
+  assert.equal(lint('123456789012345. a and')[1], 2);
+  assert.deepEqual(findingsFor('123456789012345. a and', 'dangling-conjunction')
+    .map(finding => [finding.line, finding.col]), [[1, 1]]);
+  assert.deepEqual(findingsFor('- a and', 'dangling-conjunction')
+    .map(finding => [finding.line, finding.col]), [[1, 1]]);
+  assert.deepEqual(findingsFor('- a\n  b and', 'dangling-conjunction')
+    .map(finding => [finding.line, finding.col]), [[2, 5]]);
+  for (const text of ['-', '===', 'a;b']) assert.equal(lint(text)[1], 1, text);
+  assert.equal(lint('a ; b')[1], 3);
+});
+
+test('Markdown：Setext 不跨旧列表容器吞掉新空条目', () => {
+  const text = '- a\n- \n  b and';
+  assert.equal(lint(text)[1], 3);
+  assert.deepEqual(findingsFor(text, 'dangling-conjunction')
+    .map(finding => [finding.line, finding.col]), [[3, 5]]);
+  assert.deepEqual(findingsFor('- a and\n- \n  b and', 'dangling-conjunction')
+    .map(finding => [finding.line, finding.col]), [[1, 1], [3, 5]]);
+  assert.deepEqual(findingsFor('- a\n- \n  b;', 'semicolon')
+    .map(finding => [finding.line, finding.col]), [[3, 4]]);
+  assert.equal(lint('heading\n- ')[1], 1);
+  assert.deepEqual(findingsFor('- x and\n  - \n  z', 'dangling-conjunction'), []);
+  assert.equal(lint('- x\n  ===')[1], 1);
+  assert.equal(lint('- x\n===')[1], 2);
+  const result = runCli(['--json'], text);
+  assert.ifError(result.error);
+  assert.equal(result.status, 1);
+});
+
+test('Markdown：ASCII 空条目缩进宽度不随行尾空格和 Tab 改变', () => {
+  for (const tail of [' ', '  ', '     ', ' \t', '  \t \t']) {
+    for (const [marker, indent] of [['-', 2], ['1.', 3], ['30)', 4]]) {
+      const text = `${marker}${tail}\n${' '.repeat(indent)}b and`;
+      assert.deepEqual(findingsFor(text, 'dangling-conjunction')
+        .map(finding => [finding.line, finding.col]), [[2, indent + 3]], text);
+      assert.equal(lint(text)[1], 2);
+      assert.deepEqual(lint(`${marker}${tail}\n${' '.repeat(indent + 4)}a;b`), [[], 0]);
+    }
+  }
+  assert.deepEqual(findingsFor(' -  \n   b and', 'dangling-conjunction')
+    .map(finding => [finding.line, finding.col]), [[2, 6]]);
+  for (const body of ['a', '\u00a0', '\u3000']) {
+    assert.deepEqual(findingsFor(`-     ${body}\n  b and`, 'dangling-conjunction'), []);
+    assert.deepEqual(findingsFor(`-     ${body}\n      b and`, 'dangling-conjunction')
+      .map(finding => [finding.line, finding.col]), [[2, 9]]);
+  }
+  assert.deepEqual(findingsFor('-     a;b', 'semicolon')
+    .map(finding => [finding.line, finding.col]), [[1, 8]]);
+  const result = runCli(['--json'], '-  \n  b and');
+  assert.ifError(result.error);
+  assert.equal(result.status, 1);
+});
+
+test('中文：悬空连词尾部使用 Python 兼容空白且不吞 BOM', () => {
+  for (const conjunction of ['和', '或', '以及', '并且', '或者', '同时']) {
+    for (const whitespace of [' ', '\t', '\u001f', '\u00a0', '\u3000']) {
+      const text = `- 甲${conjunction}${whitespace}`;
+      const findings = findingsFor(text, 'zh-dangling-conjunction', { language: 'zh' });
+      assert.equal(findings.length, 1, text);
+      assert.equal(findings[0].level, 'advisory');
+      assert.deepEqual([findings[0].line, findings[0].col], [1, 1]);
+    }
+    assert.deepEqual(findingsFor(`- 甲${conjunction}\ufeff`, 'zh-dangling-conjunction', { language: 'zh' }), []);
+  }
+  assert.equal(findingsFor('- a and\u001f', 'dangling-conjunction').length, 1);
+  assert.deepEqual(findingsFor('- a and\ufeff', 'dangling-conjunction'), []);
+  assert.deepEqual(findingsFor('\ufeff甲;', 'zh-semicolon', { language: 'zh' })
+    .map(finding => [finding.line, finding.col]), [[1, 3]]);
+  for (const [tail, count] of [['\u001f', 1], ['\ufeff', 0]]) {
+    const result = runCli(['--language', 'zh', '--json'], `- 甲和${tail}`);
+    assert.ifError(result.error);
+    assert.equal(result.status, 0);
+    assert.equal(JSON.parse(result.stdout).violations
+      .filter(finding => finding.rule === 'zh-dangling-conjunction').length, count);
+  }
+});
+
+test('Markdown：空表格单元格不覆盖列表末条有效内容而代码操作数仍有效', () => {
+  const header = '- x\n  | a | b |\n  |---|---|';
+  for (const blank of ['', ' ', '\t', '\u00a0', '\u3000', '\u001f']) {
+    const text = `${header}\n  | c or | ${blank} |`;
+    assert.equal(lint(text)[1], 5);
+    assert.deepEqual(findingsFor(text, 'dangling-conjunction')
+      .map(finding => [finding.line, finding.col]), [[4, 7]], text);
+    const firstBlank = `${header}\n  | ${blank} | c or |`;
+    const expectedColumn = [...`  | ${blank} | c `].length + 1;
+    assert.deepEqual(findingsFor(firstBlank, 'dangling-conjunction')
+      .map(finding => [finding.line, finding.col]), [[4, expectedColumn]]);
+    assert.equal(lint(`${text}\n  | ${blank} | ${blank} |`)[1], 5);
+    assert.equal(findingsFor(`${text}\n  | ${blank} | ${blank} |`, 'dangling-conjunction').length, 1);
+    assert.deepEqual(findingsFor(`${header}\n  | done | ${blank} |`, 'dangling-conjunction'), []);
+  }
+  for (const cell of ['`ok`', ' \u3000`ok`\u00a0 ', '\ufeff', 'done']) {
+    const text = `${header}\n  | a and | ${cell} |`;
+    assert.deepEqual(findingsFor(text, 'dangling-conjunction'), [], text);
+    assert.equal(lint(text)[1], cell.includes('`') ? 5 : 6);
+  }
+  const positioned = `${header}\n  | 😀c or | |`;
+  assert.deepEqual(findingsFor(positioned, 'dangling-conjunction')
+    .map(finding => [finding.line, finding.col]), [[4, 8]]);
+  assert.deepEqual(findingsFor('- x and\n  | | |\n  |-|-|\n  | | |', 'dangling-conjunction')
+    .map(finding => [finding.line, finding.col]), [[1, 1]]);
+  const result = runCli(['--json'], `${header}\n  | c or | |`);
+  assert.ifError(result.error);
+  assert.equal(result.status, 1);
+  assert.equal(JSON.parse(result.stdout).words, 5);
+});
+
+test('Markdown：列表已识别后同行 ATX 和水平线正文不再次识别为块', () => {
+  assert.equal(lint('- # Foo bar')[1], 3);
+  assert.equal(lint('- ***')[1], 1);
+  assert.equal(lint('- ```bash')[1], 1);
+  assert.equal(lint('- \n  # Foo bar')[1], 2);
+  assert.equal(lint('- \n  ***')[1], 0);
+  assert.equal(lint('- \n  ```bash\n  bad;\n  ```')[1], 0);
+  assert.deepEqual(findingsFor('- # a and', 'dangling-conjunction')
+    .map(finding => [finding.line, finding.col]), [[1, 1]]);
+  assert.deepEqual(findingsFor('- \n  # a and', 'dangling-conjunction')
+    .map(finding => [finding.line, finding.col]), [[2, 7]]);
+});
+
+test('Markdown：非行界 Unicode 空白仍受列表容器缩进约束', () => {
+  const half = Array(13).fill('word').join(' ');
+  for (const blank of ['\u3000', '\u00a0', '\u001f']) {
+    const unindented = `- foo\n${blank}\n  bar and`;
+    assert.equal(lint(unindented)[1], 3);
+    assert.deepEqual(findingsFor(unindented, 'dangling-conjunction'), []);
+    for (const indent of ['  ', '\t']) {
+      const indented = `- foo\n${indent}${blank}\n  bar and`;
+      assert.equal(lint(indented)[1], 3);
+      assert.deepEqual(findingsFor(indented, 'dangling-conjunction')
+        .map(finding => [finding.line, finding.col]), [[3, 7]]);
+    }
+    assert.equal(lint(`${half}\n${blank}\n${half}`)[1], 26);
+    assert.deepEqual(findingsFor(`${half}\n${blank}\n${half}`, 'long-sentence')
+      .map(finding => [finding.line, finding.col]), [[1, 1]]);
+  }
+});
+
+test('文档契约：列表标记同行 pipe 表头按普通文本而另起行支持表格', () => {
+  const inline = '- | a | b |\n  |-|-|\n  | c | d |';
+  const separate = '- \n  | a | b |\n  |-|-|\n  | c | d |';
+  assert.deepEqual(lint(inline), [[], 11]);
+  assert.deepEqual(lint(separate), [[], 4]);
+  assert.equal(lint('- | `a` | b |\n  |-|-|\n  | c | d |')[1], 10);
+  assert.deepEqual(lint('- - -'), [[], 0]);
+  assert.equal(lint('- ***')[1], 1);
+  assert.equal(lint('- # Foo bar')[1], 3);
+  for (const text of [inline.replace('c |', 'c; |'), separate.replace('c |', 'c; |')]) {
+    assert.deepEqual(findingsFor(text, 'semicolon').map(finding => [finding.line, finding.col]),
+      [[text.startsWith('- \n') ? 4 : 3, 6]]);
+  }
+});
+
+test('文档契约：Unicode 空白可打开语法段落但不是末条有效内容', () => {
+  for (const blank of ['\u00a0', '\u3000', '\u001f', ' \u3000\t']) {
+    assert.deepEqual(lint(`${blank}\n===`), [[], 0]);
+    assert.deepEqual(lint(`- \n  ${blank}\n  ===`), [[], 0]);
+    const text = `- x and\n\n  ${blank}\n  ===`;
+    assert.equal(lint(text)[1], 2);
+    assert.deepEqual(findingsFor(text, 'dangling-conjunction')
+      .map(finding => [finding.line, finding.col]), [[1, 1]]);
+  }
+  for (const blank of ['', ' ', '\t', ' \t ']) {
+    assert.deepEqual(lint(`${blank}\n===`), [[], 1]);
+    assert.deepEqual(lint(`- \n  ${blank}\n  ===`), [[], 1]);
+  }
+  assert.deepEqual(lint('- \n  ==='), [[], 1]);
+  assert.deepEqual(lint('\u00a0'), [[], 0]);
+  for (const [text, words] of [['\u00a0\n===', 0], ['- \n  \u00a0\n  ===', 0], ['- \n  ===', 1]]) {
+    const result = runCli(['--json'], text);
+    assert.ifError(result.error);
+    assert.equal(result.status, 0);
+    assert.equal(JSON.parse(result.stdout).words, words);
+  }
+});
+
+test('Markdown：去缩进退出列表先结束旧段落再识别顶层代码', () => {
+  for (const [start, contentIndent] of [['123. a', 5], ['-    a', 5], ['30)  a', 5], ['  123. a', 7]]) {
+    const outsideCode = `${start}\n${' '.repeat(contentIndent - 1)}hidden;`;
+    assert.deepEqual(lint(outsideCode), [[], 1], outsideCode);
+    const outsideProse = `${start}\n   hidden;`;
+    assert.equal(lint(outsideProse)[1], 2);
+    assert.deepEqual(findingsFor(outsideProse, 'semicolon').map(finding => [finding.line, finding.col]), [[2, 10]]);
+    for (const width of [contentIndent, contentIndent + 4]) {
+      const continued = `${start}\n${' '.repeat(width)}hidden;`;
+      assert.equal(lint(continued)[1], 2);
+      assert.deepEqual(findingsFor(continued, 'semicolon').map(finding => [finding.line, finding.col]), [[2, width + 7]]);
+    }
+    assert.deepEqual(lint(`${start}\n\n${' '.repeat(contentIndent + 4)}hidden;`), [[], 1]);
+    assert.deepEqual(lint(`${start}\n\n    hidden;`), [[], 1]);
+  }
+  for (const indent of ['    ', '          ', '\t']) {
+    const body = '😀hidden;';
+    const text = `plain\n${indent}${body}`;
+    assert.equal(lint(text)[1], 2);
+    assert.deepEqual(findingsFor(text, 'semicolon').map(finding => [finding.line, finding.col]),
+      [[2, [...`${indent}${body}`].length]]);
+  }
+  assert.deepEqual(lint('123. 😀a\n\t😀hidden;'), [[], 1]);
+  const continued = '123. 😀a\n\t 😀visible;';
+  assert.equal(lint(continued)[1], 2);
+  assert.deepEqual(findingsFor(continued, 'semicolon').map(finding => [finding.line, finding.col]), [[2, 11]]);
+  assert.deepEqual(findingsFor('123. 😀a;\n    hidden;', 'semicolon')
+    .map(finding => [finding.line, finding.col]), [[1, 8]]);
+  const dangling = '123. a and\n    hidden;';
+  assert.equal(lint(dangling)[1], 2);
+  assert.deepEqual(findingsFor(dangling, 'semicolon'), []);
+  assert.deepEqual(findingsFor(dangling, 'dangling-conjunction')
+    .map(finding => [finding.line, finding.col]), [[1, 1]]);
+  for (const text of ['123. a\n    hidden;', '-    a\n    hidden;']) {
+    const result = runCli(['--json'], text);
+    assert.ifError(result.error);
+    assert.equal(result.status, 0);
+    assert.equal(JSON.parse(result.stdout).words, 1);
+  }
+});
+
 test('规则：检查器提示和等级符合目录', () => {
   const [findings] = lint('The panel is removed; spin up the job. Perform an analysis of the seamless log. We have received the report.');
   const levels = new Map(findings.map(({ rule, level }) => [rule, level]));
@@ -67,6 +573,43 @@ test('规则：带否定、副词的情态完成式受保护', () => {
   assert.equal(findings.length, 1);
   assert.equal(findings[0].match, 'have received');
   assert.equal(findingsFor('It may fail. We have received the report.', 'present-perfect').length, 1);
+});
+
+test('规则：情态完成式保护不限前缀长度且不跨越普通词或代码', () => {
+  const prefix = `😀 It might ${'probably still perhaps '.repeat(8_000)}`;
+  const text = `${prefix}have failed. We have received.`;
+  const findings = findingsFor(text, 'present-perfect');
+  assert.equal(findings.length, 1);
+  assert.deepEqual([findings[0].line, findings[0].col],
+    [1, [...text.slice(0, text.lastIndexOf('have'))].length + 1]);
+  for (const tail of ['truly not', 'not never also already just only even still yet ever well perhaps', 'İncredibly']) {
+    assert.deepEqual(findingsFor(`It could ${tail} have failed.`, 'present-perfect'), [], tail);
+  }
+  for (const text of ['It may fail and we have received.', 'It may `not` have failed.',
+    'It may have failed. It has failed. It had failed.']) {
+    assert.equal(findingsFor(text, 'present-perfect').length, text.includes('had') ? 2 : 1, text);
+  }
+});
+
+test('性能：密集普通和情态完成式不重复扫描正文前缀', () => {
+  const repetitions = 32_000;
+  const rules = RULES.filter(({ id }) => id === 'present-perfect');
+  for (const [fragment, expectedCount, wordsPerFragment] of [
+    ['We have received. ', repetitions, 3], ['It might not have failed. ', 0, 5],
+  ]) {
+    const text = fragment.repeat(repetitions);
+    const started = process.cpuUsage();
+    const [findings, words] = lint(text, undefined, undefined, rules);
+    const elapsed = process.cpuUsage(started);
+    assert.ok(elapsed.user + elapsed.system < 4_000_000, '完成式处理超过 4 秒 CPU 预算');
+    assert.equal(findings.length, expectedCount);
+    assert.equal(words, repetitions * wordsPerFragment);
+    if (findings.length) {
+      assert.deepEqual([findings[0].line, findings[0].col], [1, 4]);
+      assert.deepEqual([findings.at(-1).line, findings.at(-1).col],
+        [1, (repetitions - 1) * fragment.length + 4]);
+    }
+  }
 });
 
 test('规则：同义词差异只给建议，不宣称语义相同', () => {
@@ -208,6 +751,19 @@ test('Markdown：错误围栏类型和过短闭合符仍在代码区', () => {
   }
 });
 
+test('Markdown：段落中的空格和 Tab 续行不能规避句长', () => {
+  for (const indent of ['    ', '\t']) {
+    const [findings, words] = lint(`${sentence(10).slice(0, -1)}\n${indent}${sentence(16)}`);
+    assert.equal(words, 26);
+    const long = findings.filter(({ rule }) => rule === 'long-sentence');
+    assert.equal(long.length, 1);
+    assert.deepEqual([long[0].line, long[0].col], [1, 1]);
+    assert.deepEqual(lint(`${sentence(10)}\n\n${indent}${sentence(16)}`), [[], 10]);
+    assert.deepEqual(findingsFor(`Clear\n${indent}bad;`, 'semicolon')
+      .map(({ line, col }) => [line, col]), [[2, indent.length + 4]]);
+  }
+});
+
 test('Markdown：闭合围栏尾部只允许空白', () => {
   const [findings, words] = lint('```\n``` text\ncode;\n```\nClear.');
   assert.deepEqual(findings, []);
@@ -228,6 +784,48 @@ test('Markdown：多反引号代码和未闭合标记', () => {
   assert.equal(findings.length, 1);
   assert.equal(findings[0].col, text.indexOf('bad;') + 4);
   assert.equal(findingsFor('Use `unclosed;', 'semicolon').length, 1);
+});
+
+test('Markdown：反引号开启转义按反斜杠奇偶处理', () => {
+  for (const count of [1, 2, 3, 4]) {
+    const text = `😀 ${'\\'.repeat(count)}\`bad;\` after;`;
+    assert.deepEqual(findingsFor(text, 'semicolon').map(({ col }) => col), count % 2
+      ? [7 + count, 15 + count] : [15 + count], text);
+  }
+  assert.deepEqual(findingsFor('😀 \\``bad;` after;', 'semicolon').map(({ col }) => col), [17]);
+});
+
+test('Markdown：变长反引号只由等长标记关闭且代码内不转义', () => {
+  for (const text of ['😀 ``one ` bad; \\`` after;', '😀 ```one `` bad; \\``` after;',
+    '😀 `bad;\\` after;', '😀 ``bad;\nmore \\`` after;']) {
+    const findings = findingsFor(text, 'semicolon');
+    assert.equal(findings.length, 1, text);
+    assert.deepEqual([findings[0].line, findings[0].col],
+      [text.split('\n').length, [...text.split('\n').at(-1)].length], text);
+  }
+  assert.equal(findingsFor('Use ``bad;` after;', 'semicolon').length, 2);
+});
+
+test('Markdown：密集已闭合及未匹配转义反引号保持线性处理', () => {
+  const repetitions = 64_000;
+  const boundary = '\\``hidden;` \\\\``hidden;\\`` ';
+  const cases = [
+    ['已闭合', '`a` ', 1],
+    ['未匹配长度', '\\``x ', repetitions + 1],
+    ['转义边界', boundary, 2 * repetitions + 1],
+  ];
+  for (const [label, fragment, expectedWords] of cases) {
+    const text = fragment.repeat(repetitions) + 'visible;';
+    const started = process.cpuUsage();
+    assert.deepEqual(lint(text, undefined, undefined, []), [[], expectedWords], label);
+    const elapsed = process.cpuUsage(started);
+    assert.ok(elapsed.user + elapsed.system < 4_000_000, `${label}处理超过 4 秒 CPU 预算`);
+    const findings = findingsFor(text, 'semicolon', {
+      rules: RULES.filter(({ id }) => id === 'semicolon'),
+    });
+    assert.equal(findings.length, 1, label);
+    assert.deepEqual([findings[0].line, findings[0].col], [1, text.length], label);
+  }
 });
 
 test('Markdown：跨行 inline code 不参与检查并保留源位置', () => {
@@ -253,6 +851,41 @@ test('Markdown：标记符号不计入词数', () => {
   const [findings, words] = lint('# Clear heading\n\n- Read now.\n\n---\n***\n___\nTitle\n===');
   assert.deepEqual(findings, []);
   assert.equal(words, 5);
+});
+
+test('Markdown：Setext 下划线需要前置段落且独立等号保留为正文', () => {
+  for (const underline of ['-', '--', '---', '=', '==', '===', ' - \t', '  --\t']) {
+    const text = `Title\n${underline}\n${sentence(24)}`;
+    assert.deepEqual(lint(text), [[], 25], underline);
+    assert.deepEqual(findingsFor(`Title\n${underline}\nbad;`, 'semicolon')
+      .map(({ line, col }) => [line, col]), [[3, 4]], underline);
+  }
+  for (const line of ['=', '==', '===', '--']) assert.deepEqual(lint(line), [[], 1], line);
+  assert.deepEqual(lint('---'), [[], 0]);
+  assert.deepEqual(lint('    Title\n    --\n    bad;'), [[], 0]);
+});
+
+test('Markdown：块标记尾部只允许 ASCII 空白', () => {
+  for (const whitespace of ['\u3000', '\u00a0', '\u001f']) {
+    assert.deepEqual(lint(`\`\`\`\n\`\`\`${whitespace}\nA; B.\n\`\`\``), [[], 0]);
+    assert.deepEqual(lint(`First\n---${whitespace}\nNext`), [[], 3]);
+    assert.deepEqual(lint(`First\n==${whitespace}\nNext`), [[], 3]);
+    assert.equal(lint(`First\n- ${whitespace}\n  bad;`)[1], 2);
+  }
+  assert.deepEqual(lint('```\n``` \t\nbad;')[0].map(({ line, col }) => [line, col]), [[3, 4]]);
+  assert.equal(lint('First\n- \t\n  bad;')[1], 2);
+  assert.deepEqual(lint('-\t-\t-\n*\t*\t*\n_\t_\t_'), [[], 0]);
+});
+
+test('性能：分隔标记后的长空白和非空白尾部不二次回溯', () => {
+  for (const marker of ['---', '* * *', '___']) {
+    const text = `${marker}${' '.repeat(100_000)}x;`;
+    const started = process.cpuUsage();
+    assert.equal(lint(text, undefined, undefined, [])[1], marker === '* * *' ? 3 : 2);
+    const elapsed = process.cpuUsage(started);
+    assert.ok(elapsed.user + elapsed.system < 4_000_000, '块标记处理超过 4 秒 CPU 预算');
+    assert.deepEqual(findingsFor(text, 'semicolon').map(({ line, col }) => [line, col]), [[1, text.length]]);
+  }
 });
 
 test('Markdown：表格单元格独立检查并计数', () => {
@@ -292,6 +925,62 @@ test('Markdown：表格内代码竖线作为操作数且列号准确', () => {
 
 test('Markdown：普通正文中的竖线不识别为表格', () => {
   assert.equal(lint('one | two')[1], 3);
+});
+
+test('Markdown：列表内表格随去缩进结束且正文恢复合并', () => {
+  const table = '- a\n  | h | i |\n  |---|---|';
+  assert.deepEqual(lint(`${table}\n| x | y |`), [[], 8]);
+  const text = `${table}\n| x | y |\n${sentence(22)}`;
+  assert.equal(lint(text)[1], 30);
+  assert.deepEqual(findingsFor(text, 'long-sentence').map(({ line, col }) => [line, col]), [[4, 1]]);
+  assert.equal(lint(`${table}\n| x | y |\n|-|-|\n| z | q |`)[1], 7);
+});
+
+test('Markdown：列表内表格分隔行需满足内容缩进上下限', () => {
+  assert.deepEqual(lint('- item\n  a | b\n--|--\n  c | d'), [[], 8]);
+  assert.deepEqual(lint('- item\n  a | b\n  --|--\n  c | d'), [[], 5]);
+  assert.deepEqual(lint('- item\n  a | b\n\t--|--\n  c | d'), [[], 5]);
+  const text = `- item\n  a | b\n--|--\n  ${sentence(25)}`;
+  assert.deepEqual(findingsFor(text, 'long-sentence').map(({ line, col }) => [line, col]), [[3, 1]]);
+  assert.deepEqual(lint('    a | b\n    --|--\n    c; | d'), [[], 0]);
+});
+
+test('Markdown：活动表格深缩进数据行不误作代码', () => {
+  for (const indent of ['      ', '\t\t']) {
+    const table = '- a\n  | h | i |\n  |---|---|';
+    const text = `${table}\n${indent}| x; | y |`;
+    assert.equal(lint(text)[1], 5);
+    assert.deepEqual(findingsFor(text, 'semicolon').map(({ line, col }) => [line, col]),
+      [[4, indent.length + 4]]);
+    assert.deepEqual(lint(`${table}\n\n${indent}| x; | y |`), [[], 3]);
+    assert.deepEqual(lint(`${table}\n${indent}bad;`), [[], 3]);
+  }
+  assert.equal(findingsFor('| h | i |\n|-|-|\n    | x; | y |', 'semicolon').length, 1);
+});
+
+test('Markdown：缩进代码的表头不能开启正文表格', () => {
+  for (const indent of ['    ', '\t']) {
+    assert.deepEqual(lint(`${indent}Label | Detail\n--- | ---\none | two`), [[], 6]);
+    assert.deepEqual(lint(`Clear.\n\n${indent}Label | Detail\n${indent}--- | ---\n${indent}bad; | code`), [[], 1]);
+  }
+  assert.deepEqual(lint('```\nLabel | Detail\n--- | ---\nbad; | code\n```\nClear.'), [[], 1]);
+});
+
+test('Markdown：表格在列表、标题、水平线和空行前结束', () => {
+  const table = 'Label | Detail\n--- | ---\nClear | Done';
+  assert.deepEqual(findingsFor(`${table}\n- a | b and`, 'dangling-conjunction')
+    .map(({ line, col }) => [line, col]), [[4, 1]]);
+  assert.equal(lint(`${table}\n- a | b and`)[1], 8);
+  for (const boundary of ['# ', '---\n', '\n']) {
+    assert.equal(lint(`${table}\n${boundary}one | two`)[1], 7);
+  }
+});
+
+test('Markdown：列表内另起行表格保留单元格检查和位置', () => {
+  const text = '- Read details\n\n  Label | Detail\n  --- | ---\n  Clear | bad;\n- a | b and';
+  assert.equal(lint(text)[1], 10);
+  assert.deepEqual(findingsFor(text, 'semicolon').map(({ line, col }) => [line, col]), [[5, 14]]);
+  assert.deepEqual(findingsFor(text, 'dangling-conjunction').map(({ line, col }) => [line, col]), [[6, 1]]);
 });
 
 test('列表：支持标记、大小写变化和尾随空格', () => {
@@ -349,8 +1038,79 @@ test('列表：列表项中的围栏不会吞掉之前正文或切换错误标�
 });
 
 test('列表：缩进代码不会取代最后一条有效正文', () => {
-  assert.equal(findingsFor('- Do this and\n      code and', 'dangling-conjunction').length, 1);
-  assert.deepEqual(findingsFor('- Do this and\n      code and\n  record the result.', 'dangling-conjunction'), []);
+  assert.equal(findingsFor('- Do this and\n\n      code and', 'dangling-conjunction').length, 1);
+  assert.deepEqual(findingsFor('- Do this and\n\n      code and\n  record the result.', 'dangling-conjunction'), []);
+});
+
+test('列表：深缩进的未分段续行仍检查正文', () => {
+  const text = '- Back up the data and\n      restore it later;';
+  assert.deepEqual(findingsFor(text, 'dangling-conjunction'), []);
+  assert.equal(lint(text)[1], 8);
+  assert.deepEqual(findingsFor(text, 'semicolon').map(({ line, col }) => [line, col]), [[2, 23]]);
+  assert.deepEqual(findingsFor(text.replace('\n', '\n\n'), 'semicolon'), []);
+  assert.equal(findingsFor(text.replace('\n', '\n\n'), 'dangling-conjunction').length, 1);
+});
+
+test('列表：顶层围栏终止列表归属且后续缩进代码不参与检查', () => {
+  const text = '- Step one\n\n```bash\necho hi\n```\n\n    rm -rf x; echo done';
+  assert.deepEqual(lint(text), [[], 2]);
+  assert.deepEqual(lint(text.replace('    rm', '\trm')), [[], 2]);
+  const nested = '- Step one\n\n  ```bash\n  echo hi\n  ```\n\n  bad;';
+  assert.deepEqual(findingsFor(nested, 'semicolon').map(({ line, col }) => [line, col]), [[7, 6]]);
+});
+
+test('列表：围栏随容器去缩进结束且当前行重新识别块', () => {
+  for (const indent of ['  ', '\t']) {
+    const text = `- Step\n${indent}\`\`\`\nA; B.`;
+    assert.deepEqual(findingsFor(text, 'semicolon').map(({ line, col }) => [line, col]), [[3, 2]]);
+    assert.deepEqual(lint(`- Step\n${indent}\`\`\`\n${indent}x\n\`\`\`\nA; B.\n\`\`\``), [[], 1]);
+    assert.deepEqual(lint(`- Step\n${indent}\`\`\`\n\n${indent}A; B.\n${indent}\`\`\``), [[], 1]);
+  }
+  assert.deepEqual(lint('  ```\nA; B.\n```'), [[], 0]);
+});
+
+test('Markdown：单短横线表格按单元格检查且代码对照仍排除', () => {
+  for (const separator of ['|-|-|', '|:-|-:|', '|:-:|--|']) {
+    assert.deepEqual(lint(`| a | b |\n${separator}\n| x | y |`), [[], 4]);
+  }
+  assert.deepEqual(lint('| a | b |\n|-|-|\n| `bad;` | y |'), [[], 3]);
+  assert.deepEqual(lint('    | a | b |\n    |-|-|\n    | x; | y |'), [[], 0]);
+  assert.deepEqual(lint('```\n| a | b |\n|-|-|\n| x; | y |\n```'), [[], 0]);
+  const nested = '- Read\n\n\t| a | b |\n\t|-|-|\n\t| x; | y |';
+  assert.equal(lint(nested)[1], 5);
+  assert.deepEqual(findingsFor(nested, 'semicolon').map(({ line, col }) => [line, col]), [[5, 5]]);
+});
+
+test('列表：非 1 序号和空条目不能打断普通段落规避句长', () => {
+  const first = sentence(10).slice(0, -1);
+  for (const marker of ['30)', '2)']) {
+    const text = `${first}\n${marker} ${sentence(16)}`;
+    assert.equal(findingsFor(text, 'long-sentence').length, 1, marker);
+    assert.equal(lint(text)[1], 27, marker);
+    assert.deepEqual(findingsFor(`${first}\n\n${marker} ${sentence(16)}`, 'long-sentence'), []);
+  }
+  for (const marker of ['+ ', '1) ', '* ', '30) ']) {
+    const text = `${first}\n${marker}\n${sentence(16)}`;
+    assert.equal(findingsFor(text, 'long-sentence').length, 1, marker);
+    assert.deepEqual(findingsFor(`${first}\n\n${marker}\n${sentence(16)}`, 'long-sentence'), []);
+  }
+  assert.equal(lint(`${first}\n2. ${sentence(16)}`)[1], 27);
+  assert.equal(lint(`${first}\n1. \n${sentence(16)}`)[1], 27);
+  for (const marker of ['1.', '1)', '01.', '-']) {
+    assert.deepEqual(findingsFor(`${first}\n${marker} ${sentence(16)}`, 'long-sentence'), []);
+  }
+});
+
+test('列表：Tab 缩进按四列制表位识别续行但报告原始字符列', () => {
+  for (const indent of ['\t', ' \t', '\t ', '\t\t']) {
+    const text = `- Back up the data and\n${indent}restore it later;`;
+    assert.deepEqual(findingsFor(text, 'dangling-conjunction'), [], JSON.stringify(indent));
+    assert.deepEqual(findingsFor(text, 'semicolon').map(({ line, col }) => [line, col]),
+      [[2, indent.length + 17]]);
+  }
+  assert.deepEqual(findingsFor('- Back up the data and\n\trestore it later.', 'dangling-conjunction'), []);
+  assert.deepEqual(lint('Clear.\n\n\tbad;'), [[], 1]);
+  assert.deepEqual(lint('- Step one\n\n\t\tbad;'), [[], 2]);
 });
 
 test('CLI：JSON 字段和文本类型上限保持兼容', () => {
@@ -583,6 +1343,45 @@ test('Unicode：Python 兼容空白字符切分词和规则边界', () => {
   assert.deepEqual(findingsFor('éhave received.', 'present-perfect'), []);
 });
 
+test('Unicode：切分逻辑行后非行界 Unicode 空白不终止段落', () => {
+  const half = Array(13).fill('word').join(' ');
+  for (const whitespace of ['\u3000', '\u00a0', '\u001f', ' \u3000\t']) {
+    const text = `${half}\n${whitespace}\n${half}`;
+    assert.equal(lint(text)[1], 26);
+    assert.deepEqual(findingsFor(text, 'long-sentence').map(({ line, col }) => [line, col]), [[1, 1]]);
+    assert.deepEqual(findingsFor(`Clear\n${whitespace}\nbad;`, 'semicolon')
+      .map(({ line, col }) => [line, col]), [[3, 4]]);
+  }
+  for (const whitespace of ['', ' ', '\t', ' \t ']) {
+    assert.deepEqual(lint(`${half}\n${whitespace}\n${half}`), [[], 26]);
+  }
+});
+
+test('性能：长中间空白和密集表格保持线性处理及原始列号', () => {
+  const cells = 32_000;
+  const table = `|${'x|'.repeat(cells)}\n|${'-|'.repeat(cells)}\n|${'😀;|'.repeat(cells)}`;
+  const cases = [
+    ['中间空白', `a${' '.repeat(64_000)}b;`, 2],
+    ['Unicode 中间空白', `a${' \u3000'.repeat(32_000)}b;`, 2],
+    ['密集表格', table, 2 * cells],
+  ];
+  for (const [label, text, expectedWords] of cases) {
+    const started = process.cpuUsage();
+    assert.deepEqual(lint(text, undefined, undefined, []), [[], expectedWords], label);
+    const elapsed = process.cpuUsage(started);
+    assert.ok(elapsed.user + elapsed.system < 4_000_000, `${label}处理超过 4 秒 CPU 预算`);
+    const findings = findingsFor(text, 'semicolon', { rules: RULES.filter(({ id }) => id === 'semicolon') });
+    if (label === '密集表格') {
+      assert.equal(findings.length, cells);
+      assert.deepEqual([findings[0].line, findings[0].col], [3, 3]);
+      assert.deepEqual([findings.at(-1).line, findings.at(-1).col], [3, 3 * cells]);
+    } else {
+      assert.equal(findings.length, 1);
+      assert.deepEqual([findings[0].line, findings[0].col], [1, text.length]);
+    }
+  }
+});
+
 test('健壮性：长单行输入不会触发调用栈溢出', () => {
   assert.deepEqual(lint('x'.repeat(200_000)), [[], 1]);
 });
@@ -715,11 +1514,55 @@ test('中文：汉字、西文词与标点的计数口径', () => {
   assert.equal(lint('𠮷𠮷。', '<stdin>', 'description', null, 'zh')[1], 2);
 });
 
-test('中文：分号和悬空连接词为硬性问题', () => {
+test('中文：小数与版本连续串整体计一字且保留分隔边界', () => {
+  for (const [text, count] of [
+    ['API', 1], ['v2.1', 1], ['3.14', 1], ['v2.1.3rc1', 1],
+    ['HTTP v2.1', 2], ['HTTP,v2.1', 2], ['API.HTTP', 2],
+    ['v2。1', 2], ['v2..1', 2], ['a.1', 2], ['1.a', 2],
+    ['汉v2.1汉API汉', 5], ['v2.1 `API` HTTP', 2],
+    ['```\nv2.1\n```', 0], ['    HTTP v2.1', 0],
+  ]) {
+    assert.equal(lint(text, '<stdin>', 'description', null, 'zh')[1], count, text);
+  }
+});
+
+test('中文：版本串在指令二十字边界不误报', () => {
+  for (const [hanCount, status] of [[19, 0], [20, 1]]) {
+    const result = runCli(['--language', 'zh', '--text-type', 'instruction', '--json'], `${'汉'.repeat(hanCount)} v2.1。`);
+    assert.equal(result.status, status);
+    const data = JSON.parse(result.stdout);
+    assert.equal(data.words, hanCount + 1);
+    assert.equal(data.hard_count, status);
+    if (status) assert.equal(data.violations[0].rule, 'zh-long-sentence');
+  }
+});
+
+test('中文：分号为硬性问题，悬空连接词仅作建议', () => {
   assert.equal(findingsFor('检查；记录。', 'zh-semicolon', { language: 'zh' })[0].level, 'advisory-free');
   const dangling = findingsFor('- 配置网络和\n- 记录结果或\n', 'zh-dangling-conjunction', { language: 'zh' });
   assert.equal(dangling.length, 2);
   assert.deepEqual([dangling[0].line, dangling[1].line], [1, 2]);
+  assert.ok(dangling.every(({ level }) => level === 'advisory'));
+});
+
+test('中文：连接词后缀不能确定词边界，不导致硬性失败', () => {
+  for (const text of [
+    '- 确认连接池未饱和', '- 统计各分片的总和',
+    '- 配置网络和', '- 记录结果或', '- 检查配置以及',
+    '- 检查配置并且', '- 检查配置或者', '- 检查配置同时',
+  ]) {
+    const result = runCli(['--language', 'zh', '--json'], text);
+    assert.equal(result.status, 0, text);
+    const data = JSON.parse(result.stdout);
+    assert.equal(data.hard_count, 0, text);
+    const dangling = data.violations.filter(({ rule }) => rule === 'zh-dangling-conjunction');
+    assert.equal(dangling.length, 1, text);
+    assert.equal(dangling[0].level, 'advisory', text);
+  }
+  assert.deepEqual(findingsFor('- 确认连接池状态', 'zh-dangling-conjunction', { language: 'zh' }), []);
+  const rule = RULES_ZH.find(({ id }) => id === 'zh-dangling-conjunction');
+  assert.equal(rule.type, 'heuristic');
+  assert.match(rule.limitations, /词边界.*总和.*饱和/u);
 });
 
 test('中文：连接词并列提示多动作', () => {

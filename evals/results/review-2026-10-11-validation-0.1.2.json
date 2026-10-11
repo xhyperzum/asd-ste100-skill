@@ -1,0 +1,1130 @@
+{
+  "version": "0.1.2",
+  "recorded_at": "2026-10-11T09:49:47.733Z",
+  "scope": "根记录保留117原八门禁与文档一词修订；intermediate_validations保留120/123/125历史，125后独立发现P2不倒写其结果；最新126冻结与真实门禁在final_validation。均为本机执行，不冒称远端CI。",
+  "linter_before": {
+    "recorded_at": "2026-10-11T09:46:56.903Z",
+    "files": [
+      {
+        "path": "scripts/ste-lint.mjs",
+        "sha256": "3ce68eb8a5a33675acfc6fd7b0fd3319d383b2a0d3b7b97e3b5e58e53e0f3b89"
+      },
+      {
+        "path": "tests/test_ste_lint.mjs",
+        "sha256": "426b479dc2608c364a0941b761cba22958903f3934bc0b2eec962aabb792fab9"
+      },
+      {
+        "path": "references/linter.md",
+        "sha256": "478287a33f8aaf996b263b7fccf1b0e4ff535de480052b5b9f6ddb39f8b483c7"
+      }
+    ]
+  },
+  "linter_after": {
+    "recorded_at": "2026-10-11T09:49:47.734Z",
+    "files": [
+      {
+        "path": "scripts/ste-lint.mjs",
+        "sha256": "3ce68eb8a5a33675acfc6fd7b0fd3319d383b2a0d3b7b97e3b5e58e53e0f3b89"
+      },
+      {
+        "path": "tests/test_ste_lint.mjs",
+        "sha256": "426b479dc2608c364a0941b761cba22958903f3934bc0b2eec962aabb792fab9"
+      },
+      {
+        "path": "references/linter.md",
+        "sha256": "478287a33f8aaf996b263b7fccf1b0e4ff535de480052b5b9f6ddb39f8b483c7"
+      }
+    ]
+  },
+  "runtime_snapshot": [
+    {
+      "path": "SKILL.md",
+      "sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e"
+    },
+    {
+      "path": "references/chinese-writing-rules.md",
+      "sha256": "ae2d74a0d6ebd4ee517bbb26b6975a3f40714f5f8e4078ef0170882911fc93ec"
+    },
+    {
+      "path": "evals/cases.json",
+      "sha256": "270e2646a102322a740eb2a2f00a7b8ec198d6732e2bfff519892fa954048e2e"
+    },
+    {
+      "path": "scripts/evaluate.mjs",
+      "sha256": "6464f2e1b45b8f2007c9d4a1ae19bd2f0524530548639115d934692837537542"
+    },
+    {
+      "path": "evals/adapter-pi-example.mjs",
+      "sha256": "6eb2682674f892628b2caa1636389d8a90ad14f6e5fe365b49f23e23b53acc40"
+    },
+    {
+      "path": "scripts/ste-lint.mjs",
+      "sha256": "3ce68eb8a5a33675acfc6fd7b0fd3319d383b2a0d3b7b97e3b5e58e53e0f3b89"
+    },
+    {
+      "path": "tests/test_ste_lint.mjs",
+      "sha256": "426b479dc2608c364a0941b761cba22958903f3934bc0b2eec962aabb792fab9"
+    },
+    {
+      "path": "references/linter.md",
+      "sha256": "478287a33f8aaf996b263b7fccf1b0e4ff535de480052b5b9f6ddb39f8b483c7"
+    },
+    {
+      "path": "scripts/run-tests.mjs",
+      "sha256": "c0887ae2284cfc7ff93ff54e5fc3d6c1673d4f399a6d27de19258f8073f5ddfd"
+    },
+    {
+      "path": "scripts/check-install.mjs",
+      "sha256": "dcd6aa7fbc6421c28f700bbf4d76d55e06b97eea947412b053887ff418c9758b"
+    },
+    {
+      "path": "tests/test_case_acceptance.mjs",
+      "sha256": "c5c28b905fbd9deaeba1fc8d00f5a062fe5872b6694dc94de5d19cc1a2747f5e"
+    },
+    {
+      "path": "tests/test_consistency.mjs",
+      "sha256": "ba4a3f4c360e65f72e4e5a86de7cc48a7a550fb318bb665ee4ec4c9ee1776b72"
+    },
+    {
+      "path": "tests/test_evaluate.mjs",
+      "sha256": "89bbe0212b2a8d05e900e02c884f6fe04c66fd9540aaee8220845b2c55e53990"
+    },
+    {
+      "path": "tests/test_adapter_pi.mjs",
+      "sha256": "e8bf1c23ead6d8e21541ec53c1d616c40894a8baec68ded05a8fbeb48bc17fc9"
+    }
+  ],
+  "checks": [
+    {
+      "name": "final117-22.23-编码",
+      "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+      "args": [
+        "scripts/check-install.mjs",
+        "--check-text-files"
+      ],
+      "started_at": "2026-10-11T09:46:56.910Z",
+      "finished_at": "2026-10-11T09:46:57.365Z",
+      "code": 0,
+      "signal": null,
+      "node_version": "v22.23.2",
+      "log_sha256": "0ad636eb09b7e38e0f9b0c850aba34e9eb825ea16cb622e881ca5f3a938a5c3d",
+      "log": "文本文件编码检查通过。\n"
+    },
+    {
+      "name": "final117-22.23-回归",
+      "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+      "args": [
+        "scripts/run-tests.mjs"
+      ],
+      "started_at": "2026-10-11T09:46:56.917Z",
+      "finished_at": "2026-10-11T09:48:12.526Z",
+      "code": 0,
+      "signal": null,
+      "node_version": "v22.23.2",
+      "log_sha256": "56737185d19c2860e5c1a11ff07edf590182e03792e7a9265c785fa39fd1d9b6",
+      "log": "回归完成：320 项真实测试，320 项通过。\n"
+    },
+    {
+      "name": "final117-22.23-安装",
+      "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+      "args": [
+        "scripts/check-install.mjs"
+      ],
+      "started_at": "2026-10-11T09:46:56.924Z",
+      "finished_at": "2026-10-11T09:48:13.381Z",
+      "code": 0,
+      "signal": null,
+      "node_version": "v22.23.2",
+      "log_sha256": "ee64f8ec829f195249630bfc2399b515a4f9da916542e8fc63618c6a9785a3df",
+      "log": "技能资源、相对 Markdown 链接和临时安装副本检查通过。\n"
+    },
+    {
+      "name": "final117-22.23-自测",
+      "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+      "args": [
+        "scripts/ste-lint.mjs",
+        "--selftest"
+      ],
+      "started_at": "2026-10-11T09:46:56.930Z",
+      "finished_at": "2026-10-11T09:47:38.678Z",
+      "code": 0,
+      "signal": null,
+      "node_version": "v22.23.2",
+      "log_sha256": "a26d69ebee3a33a17bf6542e97bff22bdb65173420f8d8e7eacd39b55a2042b6",
+      "log": "回归完成：117 项真实测试，117 项通过。\n自检完成：117 项测试，117 项通过。\n"
+    },
+    {
+      "name": "final117-22.0-编码",
+      "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+      "args": [
+        "scripts/check-install.mjs",
+        "--check-text-files"
+      ],
+      "started_at": "2026-10-11T09:46:56.936Z",
+      "finished_at": "2026-10-11T09:46:57.423Z",
+      "code": 0,
+      "signal": null,
+      "node_version": "v22.0.0",
+      "log_sha256": "0ad636eb09b7e38e0f9b0c850aba34e9eb825ea16cb622e881ca5f3a938a5c3d",
+      "log": "文本文件编码检查通过。\n"
+    },
+    {
+      "name": "final117-22.0-回归",
+      "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+      "args": [
+        "scripts/run-tests.mjs"
+      ],
+      "started_at": "2026-10-11T09:46:56.941Z",
+      "finished_at": "2026-10-11T09:48:10.358Z",
+      "code": 0,
+      "signal": null,
+      "node_version": "v22.0.0",
+      "log_sha256": "56737185d19c2860e5c1a11ff07edf590182e03792e7a9265c785fa39fd1d9b6",
+      "log": "回归完成：320 项真实测试，320 项通过。\n"
+    },
+    {
+      "name": "final117-22.0-安装",
+      "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+      "args": [
+        "scripts/check-install.mjs"
+      ],
+      "started_at": "2026-10-11T09:46:56.949Z",
+      "finished_at": "2026-10-11T09:48:12.330Z",
+      "code": 0,
+      "signal": null,
+      "node_version": "v22.0.0",
+      "log_sha256": "ee64f8ec829f195249630bfc2399b515a4f9da916542e8fc63618c6a9785a3df",
+      "log": "技能资源、相对 Markdown 链接和临时安装副本检查通过。\n"
+    },
+    {
+      "name": "final117-22.0-自测",
+      "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+      "args": [
+        "scripts/ste-lint.mjs",
+        "--selftest"
+      ],
+      "started_at": "2026-10-11T09:46:56.961Z",
+      "finished_at": "2026-10-11T09:47:37.440Z",
+      "code": 0,
+      "signal": null,
+      "node_version": "v22.0.0",
+      "log_sha256": "a26d69ebee3a33a17bf6542e97bff22bdb65173420f8d8e7eacd39b55a2042b6",
+      "log": "回归完成：117 项真实测试，117 项通过。\n自检完成：117 项测试，117 项通过。\n"
+    }
+  ],
+  "post_document_checks": [
+    {
+      "name": "postdocs117-22.23-编码",
+      "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+      "args": [
+        "scripts/check-install.mjs",
+        "--check-text-files"
+      ],
+      "started_at": "2026-10-11T10:07:30.534Z",
+      "finished_at": "2026-10-11T10:07:30.749Z",
+      "code": 0,
+      "signal": null,
+      "node_version": "v22.23.2",
+      "log_sha256": "0ad636eb09b7e38e0f9b0c850aba34e9eb825ea16cb622e881ca5f3a938a5c3d",
+      "log": "文本文件编码检查通过。\n"
+    },
+    {
+      "name": "postdocs117-22.23-安装",
+      "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+      "args": [
+        "scripts/check-install.mjs"
+      ],
+      "started_at": "2026-10-11T10:07:30.537Z",
+      "finished_at": "2026-10-11T10:08:17.289Z",
+      "code": 0,
+      "signal": null,
+      "node_version": "v22.23.2",
+      "log_sha256": "ee64f8ec829f195249630bfc2399b515a4f9da916542e8fc63618c6a9785a3df",
+      "log": "技能资源、相对 Markdown 链接和临时安装副本检查通过。\n"
+    },
+    {
+      "name": "postdocs117-22.0-编码",
+      "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+      "args": [
+        "scripts/check-install.mjs",
+        "--check-text-files"
+      ],
+      "started_at": "2026-10-11T10:07:30.541Z",
+      "finished_at": "2026-10-11T10:07:30.795Z",
+      "code": 0,
+      "signal": null,
+      "node_version": "v22.0.0",
+      "log_sha256": "0ad636eb09b7e38e0f9b0c850aba34e9eb825ea16cb622e881ca5f3a938a5c3d",
+      "log": "文本文件编码检查通过。\n"
+    },
+    {
+      "name": "postdocs117-22.0-安装",
+      "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+      "args": [
+        "scripts/check-install.mjs"
+      ],
+      "started_at": "2026-10-11T10:07:30.545Z",
+      "finished_at": "2026-10-11T10:08:14.606Z",
+      "code": 0,
+      "signal": null,
+      "node_version": "v22.0.0",
+      "log_sha256": "ee64f8ec829f195249630bfc2399b515a4f9da916542e8fc63618c6a9785a3df",
+      "log": "技能资源、相对 Markdown 链接和临时安装副本检查通过。\n"
+    }
+  ],
+  "documentation_revision": {
+    "path": "references/linter.md",
+    "before_sha256": "478287a33f8aaf996b263b7fccf1b0e4ff535de480052b5b9f6ddb39f8b483c7",
+    "after_sha256": "fcf5d2235ca59afea691c2b7c2c301c9b6bc87022cf0c6f722268402e39b109f",
+    "old": "独立物理行",
+    "new": "独立逻辑行",
+    "scope": "仅统一围栏行界术语。源码与117项回归测试不变；原完整矩阵及静态提示继续保留旧文档身份，不倒写为已审新快照。"
+  },
+  "final_validation": {
+    "stage": "独立P2去缩进旧列表状态修复后的126测试阶段",
+    "recorded_at": "2026-10-11T11:16:02.790Z",
+    "linter_before": {
+      "recorded_at": "2026-10-11T11:14:14.586Z",
+      "files": [
+        {
+          "path": "scripts/ste-lint.mjs",
+          "sha256": "6e0d651c55cc9ef5c403845021e0f5559c986fa5220453d53ce28bf978c80d10"
+        },
+        {
+          "path": "tests/test_ste_lint.mjs",
+          "sha256": "b76de6bfcd63de9c938f132b9c5f568aa551b685b1b8f6dbd61437a36f99ffe5"
+        },
+        {
+          "path": "references/linter.md",
+          "sha256": "44e483034d2b8d8bd1b15a0b2353220e2e60ba2c6f8b5d19814a5e5b72246368"
+        }
+      ]
+    },
+    "linter_after": {
+      "recorded_at": "2026-10-11T11:16:02.787Z",
+      "files": [
+        {
+          "path": "scripts/ste-lint.mjs",
+          "sha256": "6e0d651c55cc9ef5c403845021e0f5559c986fa5220453d53ce28bf978c80d10"
+        },
+        {
+          "path": "tests/test_ste_lint.mjs",
+          "sha256": "b76de6bfcd63de9c938f132b9c5f568aa551b685b1b8f6dbd61437a36f99ffe5"
+        },
+        {
+          "path": "references/linter.md",
+          "sha256": "44e483034d2b8d8bd1b15a0b2353220e2e60ba2c6f8b5d19814a5e5b72246368"
+        }
+      ]
+    },
+    "runtime_snapshot": [
+      {
+        "path": "SKILL.md",
+        "sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e"
+      },
+      {
+        "path": "references/chinese-writing-rules.md",
+        "sha256": "ae2d74a0d6ebd4ee517bbb26b6975a3f40714f5f8e4078ef0170882911fc93ec"
+      },
+      {
+        "path": "evals/cases.json",
+        "sha256": "270e2646a102322a740eb2a2f00a7b8ec198d6732e2bfff519892fa954048e2e"
+      },
+      {
+        "path": "scripts/evaluate.mjs",
+        "sha256": "6464f2e1b45b8f2007c9d4a1ae19bd2f0524530548639115d934692837537542"
+      },
+      {
+        "path": "evals/adapter-pi-example.mjs",
+        "sha256": "6eb2682674f892628b2caa1636389d8a90ad14f6e5fe365b49f23e23b53acc40"
+      },
+      {
+        "path": "scripts/ste-lint.mjs",
+        "sha256": "6e0d651c55cc9ef5c403845021e0f5559c986fa5220453d53ce28bf978c80d10"
+      },
+      {
+        "path": "tests/test_ste_lint.mjs",
+        "sha256": "b76de6bfcd63de9c938f132b9c5f568aa551b685b1b8f6dbd61437a36f99ffe5"
+      },
+      {
+        "path": "references/linter.md",
+        "sha256": "44e483034d2b8d8bd1b15a0b2353220e2e60ba2c6f8b5d19814a5e5b72246368"
+      },
+      {
+        "path": "scripts/run-tests.mjs",
+        "sha256": "c0887ae2284cfc7ff93ff54e5fc3d6c1673d4f399a6d27de19258f8073f5ddfd"
+      },
+      {
+        "path": "scripts/check-install.mjs",
+        "sha256": "dcd6aa7fbc6421c28f700bbf4d76d55e06b97eea947412b053887ff418c9758b"
+      },
+      {
+        "path": "tests/test_case_acceptance.mjs",
+        "sha256": "c5c28b905fbd9deaeba1fc8d00f5a062fe5872b6694dc94de5d19cc1a2747f5e"
+      },
+      {
+        "path": "tests/test_consistency.mjs",
+        "sha256": "ba4a3f4c360e65f72e4e5a86de7cc48a7a550fb318bb665ee4ec4c9ee1776b72"
+      },
+      {
+        "path": "tests/test_evaluate.mjs",
+        "sha256": "89bbe0212b2a8d05e900e02c884f6fe04c66fd9540aaee8220845b2c55e53990"
+      },
+      {
+        "path": "tests/test_adapter_pi.mjs",
+        "sha256": "e8bf1c23ead6d8e21541ec53c1d616c40894a8baec68ded05a8fbeb48bc17fc9"
+      }
+    ],
+    "checks": [
+      {
+        "name": "final126-latest-encoding",
+        "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+        "args": [
+          "scripts/check-install.mjs",
+          "--check-text-files"
+        ],
+        "started_at": "2026-10-11T11:14:33.919Z",
+        "finished_at": "2026-10-11T11:14:34.199Z",
+        "code": 0,
+        "signal": null,
+        "node_version": "v22.23.2",
+        "log_sha256": "0ad636eb09b7e38e0f9b0c850aba34e9eb825ea16cb622e881ca5f3a938a5c3d",
+        "log": "文本文件编码检查通过。\n"
+      },
+      {
+        "name": "final126-minimum-encoding",
+        "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+        "args": [
+          "scripts/check-install.mjs",
+          "--check-text-files"
+        ],
+        "started_at": "2026-10-11T11:14:33.922Z",
+        "finished_at": "2026-10-11T11:14:34.244Z",
+        "code": 0,
+        "signal": null,
+        "node_version": "v22.0.0",
+        "log_sha256": "0ad636eb09b7e38e0f9b0c850aba34e9eb825ea16cb622e881ca5f3a938a5c3d",
+        "log": "文本文件编码检查通过。\n"
+      },
+      {
+        "name": "final126-latest-regression",
+        "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+        "args": [
+          "scripts/run-tests.mjs"
+        ],
+        "started_at": "2026-10-11T11:14:33.924Z",
+        "finished_at": "2026-10-11T11:15:32.227Z",
+        "code": 0,
+        "signal": null,
+        "node_version": "v22.23.2",
+        "log_sha256": "f5abbecdee02ea41b37b23905d37787cdf6fd2162501f9d40028c0ffefcb5a6a",
+        "log": "回归完成：329 项真实测试，329 项通过。\n"
+      },
+      {
+        "name": "final126-minimum-regression",
+        "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+        "args": [
+          "scripts/run-tests.mjs"
+        ],
+        "started_at": "2026-10-11T11:14:33.927Z",
+        "finished_at": "2026-10-11T11:15:29.516Z",
+        "code": 0,
+        "signal": null,
+        "node_version": "v22.0.0",
+        "log_sha256": "f5abbecdee02ea41b37b23905d37787cdf6fd2162501f9d40028c0ffefcb5a6a",
+        "log": "回归完成：329 项真实测试，329 项通过。\n"
+      },
+      {
+        "name": "final126-latest-install",
+        "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+        "args": [
+          "scripts/check-install.mjs"
+        ],
+        "started_at": "2026-10-11T11:14:33.930Z",
+        "finished_at": "2026-10-11T11:15:33.532Z",
+        "code": 0,
+        "signal": null,
+        "node_version": "v22.23.2",
+        "log_sha256": "ee64f8ec829f195249630bfc2399b515a4f9da916542e8fc63618c6a9785a3df",
+        "log": "技能资源、相对 Markdown 链接和临时安装副本检查通过。\n"
+      },
+      {
+        "name": "final126-minimum-install",
+        "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+        "args": [
+          "scripts/check-install.mjs"
+        ],
+        "started_at": "2026-10-11T11:14:33.932Z",
+        "finished_at": "2026-10-11T11:15:30.329Z",
+        "code": 0,
+        "signal": null,
+        "node_version": "v22.0.0",
+        "log_sha256": "ee64f8ec829f195249630bfc2399b515a4f9da916542e8fc63618c6a9785a3df",
+        "log": "技能资源、相对 Markdown 链接和临时安装副本检查通过。\n"
+      },
+      {
+        "name": "final126-latest-selftest",
+        "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+        "args": [
+          "scripts/ste-lint.mjs",
+          "--selftest"
+        ],
+        "started_at": "2026-10-11T11:14:33.936Z",
+        "finished_at": "2026-10-11T11:15:02.727Z",
+        "code": 0,
+        "signal": null,
+        "node_version": "v22.23.2",
+        "log_sha256": "e4c6cc5413725f321a8dac76e85324b701a459d03cf87614c3921029a79cb0dd",
+        "log": "回归完成：126 项真实测试，126 项通过。\n自检完成：126 项测试，126 项通过。\n"
+      },
+      {
+        "name": "final126-minimum-selftest",
+        "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+        "args": [
+          "scripts/ste-lint.mjs",
+          "--selftest"
+        ],
+        "started_at": "2026-10-11T11:14:33.941Z",
+        "finished_at": "2026-10-11T11:15:01.226Z",
+        "code": 0,
+        "signal": null,
+        "node_version": "v22.0.0",
+        "log_sha256": "e4c6cc5413725f321a8dac76e85324b701a459d03cf87614c3921029a79cb0dd",
+        "log": "回归完成：126 项真实测试，126 项通过。\n自检完成：126 项测试，126 项通过。\n"
+      }
+    ],
+    "post_document_checks": [
+      {
+        "name": "postdocs126-latest-encoding",
+        "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+        "args": [
+          "scripts/check-install.mjs",
+          "--check-text-files"
+        ],
+        "started_at": "2026-10-11T11:22:22.986Z",
+        "finished_at": "2026-10-11T11:22:23.259Z",
+        "code": 0,
+        "signal": null,
+        "node_version": "v22.23.2",
+        "log_sha256": "0ad636eb09b7e38e0f9b0c850aba34e9eb825ea16cb622e881ca5f3a938a5c3d",
+        "log": "文本文件编码检查通过。\n"
+      },
+      {
+        "name": "postdocs126-minimum-encoding",
+        "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+        "args": [
+          "scripts/check-install.mjs",
+          "--check-text-files"
+        ],
+        "started_at": "2026-10-11T11:22:22.991Z",
+        "finished_at": "2026-10-11T11:22:23.283Z",
+        "code": 0,
+        "signal": null,
+        "node_version": "v22.0.0",
+        "log_sha256": "0ad636eb09b7e38e0f9b0c850aba34e9eb825ea16cb622e881ca5f3a938a5c3d",
+        "log": "文本文件编码检查通过。\n"
+      },
+      {
+        "name": "postdocs126-latest-install",
+        "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+        "args": [
+          "scripts/check-install.mjs"
+        ],
+        "started_at": "2026-10-11T11:22:22.994Z",
+        "finished_at": "2026-10-11T11:23:16.462Z",
+        "code": 0,
+        "signal": null,
+        "node_version": "v22.23.2",
+        "log_sha256": "ee64f8ec829f195249630bfc2399b515a4f9da916542e8fc63618c6a9785a3df",
+        "log": "技能资源、相对 Markdown 链接和临时安装副本检查通过。\n"
+      },
+      {
+        "name": "postdocs126-minimum-install",
+        "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+        "args": [
+          "scripts/check-install.mjs"
+        ],
+        "started_at": "2026-10-11T11:22:22.998Z",
+        "finished_at": "2026-10-11T11:23:14.587Z",
+        "code": 0,
+        "signal": null,
+        "node_version": "v22.0.0",
+        "log_sha256": "ee64f8ec829f195249630bfc2399b515a4f9da916542e8fc63618c6a9785a3df",
+        "log": "技能资源、相对 Markdown 链接和临时安装副本检查通过。\n"
+      }
+    ],
+    "post_document_scope": "在最终closeout、PI10、v9及初版manifest写入后运行四项编码/安装补验；随后只将真实收据嵌入本记录并刷新manifest。最终独立delivery另核清单摘要，最终文本编码另验，不冒称四项补验覆盖后写delivery。"
+  },
+  "intermediate_validations": [
+    {
+      "stage": "第七轮G1/G2/G3修复后的120项检查器回归",
+      "recorded_at": "2026-10-11T10:22:02.869Z",
+      "linter_before": {
+        "recorded_at": "2026-10-11T10:17:11.580Z",
+        "files": [
+          {
+            "path": "scripts/ste-lint.mjs",
+            "sha256": "130ea2a870439e585705de1bcc6d75ddcdba9da62fbe560afee2e70c92ee5775"
+          },
+          {
+            "path": "tests/test_ste_lint.mjs",
+            "sha256": "10f821d2bbf7536ec1207e1a6bff20c320f35d5657f0fba1d12e9c039dc983ec"
+          },
+          {
+            "path": "references/linter.md",
+            "sha256": "52079e84f2fa138ce1eb17271e532eeca6ac6a73aef216d1551097d20e7af510"
+          }
+        ]
+      },
+      "linter_after": {
+        "recorded_at": "2026-10-11T10:22:02.869Z",
+        "files": [
+          {
+            "path": "scripts/ste-lint.mjs",
+            "sha256": "130ea2a870439e585705de1bcc6d75ddcdba9da62fbe560afee2e70c92ee5775"
+          },
+          {
+            "path": "tests/test_ste_lint.mjs",
+            "sha256": "10f821d2bbf7536ec1207e1a6bff20c320f35d5657f0fba1d12e9c039dc983ec"
+          },
+          {
+            "path": "references/linter.md",
+            "sha256": "52079e84f2fa138ce1eb17271e532eeca6ac6a73aef216d1551097d20e7af510"
+          }
+        ]
+      },
+      "runtime_snapshot": [
+        {
+          "path": "SKILL.md",
+          "sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e"
+        },
+        {
+          "path": "references/chinese-writing-rules.md",
+          "sha256": "ae2d74a0d6ebd4ee517bbb26b6975a3f40714f5f8e4078ef0170882911fc93ec"
+        },
+        {
+          "path": "evals/cases.json",
+          "sha256": "270e2646a102322a740eb2a2f00a7b8ec198d6732e2bfff519892fa954048e2e"
+        },
+        {
+          "path": "scripts/evaluate.mjs",
+          "sha256": "6464f2e1b45b8f2007c9d4a1ae19bd2f0524530548639115d934692837537542"
+        },
+        {
+          "path": "evals/adapter-pi-example.mjs",
+          "sha256": "6eb2682674f892628b2caa1636389d8a90ad14f6e5fe365b49f23e23b53acc40"
+        },
+        {
+          "path": "scripts/ste-lint.mjs",
+          "sha256": "130ea2a870439e585705de1bcc6d75ddcdba9da62fbe560afee2e70c92ee5775"
+        },
+        {
+          "path": "tests/test_ste_lint.mjs",
+          "sha256": "10f821d2bbf7536ec1207e1a6bff20c320f35d5657f0fba1d12e9c039dc983ec"
+        },
+        {
+          "path": "references/linter.md",
+          "sha256": "52079e84f2fa138ce1eb17271e532eeca6ac6a73aef216d1551097d20e7af510"
+        },
+        {
+          "path": "scripts/run-tests.mjs",
+          "sha256": "c0887ae2284cfc7ff93ff54e5fc3d6c1673d4f399a6d27de19258f8073f5ddfd"
+        },
+        {
+          "path": "scripts/check-install.mjs",
+          "sha256": "dcd6aa7fbc6421c28f700bbf4d76d55e06b97eea947412b053887ff418c9758b"
+        },
+        {
+          "path": "tests/test_case_acceptance.mjs",
+          "sha256": "c5c28b905fbd9deaeba1fc8d00f5a062fe5872b6694dc94de5d19cc1a2747f5e"
+        },
+        {
+          "path": "tests/test_consistency.mjs",
+          "sha256": "ba4a3f4c360e65f72e4e5a86de7cc48a7a550fb318bb665ee4ec4c9ee1776b72"
+        },
+        {
+          "path": "tests/test_evaluate.mjs",
+          "sha256": "89bbe0212b2a8d05e900e02c884f6fe04c66fd9540aaee8220845b2c55e53990"
+        },
+        {
+          "path": "tests/test_adapter_pi.mjs",
+          "sha256": "e8bf1c23ead6d8e21541ec53c1d616c40894a8baec68ded05a8fbeb48bc17fc9"
+        }
+      ],
+      "checks": [
+        {
+          "name": "final120-22.23-编码",
+          "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+          "args": [
+            "scripts/check-install.mjs",
+            "--check-text-files"
+          ],
+          "started_at": "2026-10-11T10:17:11.583Z",
+          "finished_at": "2026-10-11T10:17:11.875Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.23.2",
+          "log_sha256": "0ad636eb09b7e38e0f9b0c850aba34e9eb825ea16cb622e881ca5f3a938a5c3d",
+          "log": "文本文件编码检查通过。\n"
+        },
+        {
+          "name": "final120-22.23-回归",
+          "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+          "args": [
+            "scripts/run-tests.mjs"
+          ],
+          "started_at": "2026-10-11T10:17:11.587Z",
+          "finished_at": "2026-10-11T10:18:04.862Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.23.2",
+          "log_sha256": "66fdd1e87c3ad516547ed63098607ac8958af1163142d64353f4f3ced45ef944",
+          "log": "回归完成：323 项真实测试，323 项通过。\n"
+        },
+        {
+          "name": "final120-22.23-安装",
+          "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+          "args": [
+            "scripts/check-install.mjs"
+          ],
+          "started_at": "2026-10-11T10:17:11.592Z",
+          "finished_at": "2026-10-11T10:18:05.917Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.23.2",
+          "log_sha256": "ee64f8ec829f195249630bfc2399b515a4f9da916542e8fc63618c6a9785a3df",
+          "log": "技能资源、相对 Markdown 链接和临时安装副本检查通过。\n"
+        },
+        {
+          "name": "final120-22.23-自测",
+          "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+          "args": [
+            "scripts/ste-lint.mjs",
+            "--selftest"
+          ],
+          "started_at": "2026-10-11T10:17:11.597Z",
+          "finished_at": "2026-10-11T10:17:42.383Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.23.2",
+          "log_sha256": "de4591f1c579488ef86561be0977a62371009b41b98d31d1af4147a4216528d8",
+          "log": "回归完成：120 项真实测试，120 项通过。\n自检完成：120 项测试，120 项通过。\n"
+        },
+        {
+          "name": "final120-22.0-编码",
+          "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+          "args": [
+            "scripts/check-install.mjs",
+            "--check-text-files"
+          ],
+          "started_at": "2026-10-11T10:17:11.600Z",
+          "finished_at": "2026-10-11T10:17:11.989Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.0.0",
+          "log_sha256": "0ad636eb09b7e38e0f9b0c850aba34e9eb825ea16cb622e881ca5f3a938a5c3d",
+          "log": "文本文件编码检查通过。\n"
+        },
+        {
+          "name": "final120-22.0-回归",
+          "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+          "args": [
+            "scripts/run-tests.mjs"
+          ],
+          "started_at": "2026-10-11T10:17:11.604Z",
+          "finished_at": "2026-10-11T10:18:02.424Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.0.0",
+          "log_sha256": "66fdd1e87c3ad516547ed63098607ac8958af1163142d64353f4f3ced45ef944",
+          "log": "回归完成：323 项真实测试，323 项通过。\n"
+        },
+        {
+          "name": "final120-22.0-安装",
+          "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+          "args": [
+            "scripts/check-install.mjs"
+          ],
+          "started_at": "2026-10-11T10:17:11.608Z",
+          "finished_at": "2026-10-11T10:18:03.115Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.0.0",
+          "log_sha256": "ee64f8ec829f195249630bfc2399b515a4f9da916542e8fc63618c6a9785a3df",
+          "log": "技能资源、相对 Markdown 链接和临时安装副本检查通过。\n"
+        },
+        {
+          "name": "final120-22.0-自测",
+          "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+          "args": [
+            "scripts/ste-lint.mjs",
+            "--selftest"
+          ],
+          "started_at": "2026-10-11T10:17:11.610Z",
+          "finished_at": "2026-10-11T10:17:40.343Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.0.0",
+          "log_sha256": "de4591f1c579488ef86561be0977a62371009b41b98d31d1af4147a4216528d8",
+          "log": "回归完成：120 项真实测试，120 项通过。\n自检完成：120 项测试，120 项通过。\n"
+        }
+      ],
+      "post_document_checks": []
+    },
+    {
+      "stage": "第八轮源码空白单元格修复后的123测试阶段",
+      "recorded_at": "2026-10-11T11:06:18.726Z",
+      "linter_before": {
+        "recorded_at": "2026-10-11T10:37:28.119Z",
+        "files": [
+          {
+            "path": "scripts/ste-lint.mjs",
+            "sha256": "861c23045d58facc00685ecbe937d63770bf87b90b7fd0415ce79a3a0770641a"
+          },
+          {
+            "path": "tests/test_ste_lint.mjs",
+            "sha256": "3a6ad66f4651cfbbb7d6cd3eb85eafbe47d1908f84440d8397d1f81560d66985"
+          },
+          {
+            "path": "references/linter.md",
+            "sha256": "cdc29d89f69263d3ee903e649680badea3afeb9979ea0a7739a81d79bb6cfe58"
+          }
+        ]
+      },
+      "checks": [
+        {
+          "name": "final123-22.23-编码",
+          "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+          "args": [
+            "scripts/check-install.mjs",
+            "--check-text-files"
+          ],
+          "started_at": "2026-10-11T10:37:28.133Z",
+          "finished_at": "2026-10-11T10:37:28.425Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.23.2",
+          "log_sha256": "0ad636eb09b7e38e0f9b0c850aba34e9eb825ea16cb622e881ca5f3a938a5c3d",
+          "log": "文本文件编码检查通过。\n"
+        },
+        {
+          "name": "final123-22.23-回归",
+          "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+          "args": [
+            "scripts/run-tests.mjs"
+          ],
+          "started_at": "2026-10-11T10:37:28.136Z",
+          "finished_at": "2026-10-11T10:38:25.097Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.23.2",
+          "log_sha256": "917494c6e42dd372595ae430ca27112d335613a735862aca3d969729e0753bcd",
+          "log": "回归完成：326 项真实测试，326 项通过。\n"
+        },
+        {
+          "name": "final123-22.23-安装",
+          "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+          "args": [
+            "scripts/check-install.mjs"
+          ],
+          "started_at": "2026-10-11T10:37:28.139Z",
+          "finished_at": "2026-10-11T10:38:24.715Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.23.2",
+          "log_sha256": "ee64f8ec829f195249630bfc2399b515a4f9da916542e8fc63618c6a9785a3df",
+          "log": "技能资源、相对 Markdown 链接和临时安装副本检查通过。\n"
+        },
+        {
+          "name": "final123-22.23-自测",
+          "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+          "args": [
+            "scripts/ste-lint.mjs",
+            "--selftest"
+          ],
+          "started_at": "2026-10-11T10:37:28.143Z",
+          "finished_at": "2026-10-11T10:37:55.534Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.23.2",
+          "log_sha256": "c8b805761e66afdb1400c171ccb253a71c9a82d2b8382f952b5751db74569429",
+          "log": "回归完成：123 项真实测试，123 项通过。\n自检完成：123 项测试，123 项通过。\n"
+        },
+        {
+          "name": "final123-22.0-编码",
+          "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+          "args": [
+            "scripts/check-install.mjs",
+            "--check-text-files"
+          ],
+          "started_at": "2026-10-11T10:37:28.149Z",
+          "finished_at": "2026-10-11T10:37:28.582Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.0.0",
+          "log_sha256": "0ad636eb09b7e38e0f9b0c850aba34e9eb825ea16cb622e881ca5f3a938a5c3d",
+          "log": "文本文件编码检查通过。\n"
+        },
+        {
+          "name": "final123-22.0-回归",
+          "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+          "args": [
+            "scripts/run-tests.mjs"
+          ],
+          "started_at": "2026-10-11T10:37:28.152Z",
+          "finished_at": "2026-10-11T10:38:21.111Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.0.0",
+          "log_sha256": "917494c6e42dd372595ae430ca27112d335613a735862aca3d969729e0753bcd",
+          "log": "回归完成：326 项真实测试，326 项通过。\n"
+        },
+        {
+          "name": "final123-22.0-安装",
+          "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+          "args": [
+            "scripts/check-install.mjs"
+          ],
+          "started_at": "2026-10-11T10:37:28.156Z",
+          "finished_at": "2026-10-11T10:38:22.907Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.0.0",
+          "log_sha256": "ee64f8ec829f195249630bfc2399b515a4f9da916542e8fc63618c6a9785a3df",
+          "log": "技能资源、相对 Markdown 链接和临时安装副本检查通过。\n"
+        },
+        {
+          "name": "final123-22.0-自测",
+          "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+          "args": [
+            "scripts/ste-lint.mjs",
+            "--selftest"
+          ],
+          "started_at": "2026-10-11T10:37:28.160Z",
+          "finished_at": "2026-10-11T10:37:55.397Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.0.0",
+          "log_sha256": "c8b805761e66afdb1400c171ccb253a71c9a82d2b8382f952b5751db74569429",
+          "log": "回归完成：123 项真实测试，123 项通过。\n自检完成：123 项测试，123 项通过。\n"
+        }
+      ],
+      "scope": "本阶段主代理保留前置冻结及八项真实门禁，未单独记录结束后的三项摘要；独立冻结验收见linter-final-v7。不将后来的125文件摘要倒写为123。"
+    },
+    {
+      "stage": "第九轮两处文档澄清后的125测试阶段，源码未变",
+      "recorded_at": "2026-10-11T11:06:18.726Z",
+      "linter_before": {
+        "recorded_at": "2026-10-11T11:03:42.595Z",
+        "files": [
+          {
+            "path": "scripts/ste-lint.mjs",
+            "sha256": "861c23045d58facc00685ecbe937d63770bf87b90b7fd0415ce79a3a0770641a"
+          },
+          {
+            "path": "tests/test_ste_lint.mjs",
+            "sha256": "c2c331d43c558c239192b27026ad192b8bfff322ae4ee442a33967ad1230310e"
+          },
+          {
+            "path": "references/linter.md",
+            "sha256": "99a71c3c54e807ae0b283b6136de7906f7942fe0cd5ecd0b8d77dc9c374edbf0"
+          }
+        ]
+      },
+      "linter_after": {
+        "recorded_at": "2026-10-11T11:05:53.519Z",
+        "files": [
+          {
+            "path": "scripts/ste-lint.mjs",
+            "sha256": "861c23045d58facc00685ecbe937d63770bf87b90b7fd0415ce79a3a0770641a"
+          },
+          {
+            "path": "tests/test_ste_lint.mjs",
+            "sha256": "c2c331d43c558c239192b27026ad192b8bfff322ae4ee442a33967ad1230310e"
+          },
+          {
+            "path": "references/linter.md",
+            "sha256": "99a71c3c54e807ae0b283b6136de7906f7942fe0cd5ecd0b8d77dc9c374edbf0"
+          }
+        ]
+      },
+      "runtime_snapshot": [
+        {
+          "path": "SKILL.md",
+          "sha256": "dcbbb0aa963ecb1ac316c17cb85df435e0233c23a7f9da5a79672238b8915d7e"
+        },
+        {
+          "path": "references/chinese-writing-rules.md",
+          "sha256": "ae2d74a0d6ebd4ee517bbb26b6975a3f40714f5f8e4078ef0170882911fc93ec"
+        },
+        {
+          "path": "evals/cases.json",
+          "sha256": "270e2646a102322a740eb2a2f00a7b8ec198d6732e2bfff519892fa954048e2e"
+        },
+        {
+          "path": "scripts/evaluate.mjs",
+          "sha256": "6464f2e1b45b8f2007c9d4a1ae19bd2f0524530548639115d934692837537542"
+        },
+        {
+          "path": "evals/adapter-pi-example.mjs",
+          "sha256": "6eb2682674f892628b2caa1636389d8a90ad14f6e5fe365b49f23e23b53acc40"
+        },
+        {
+          "path": "scripts/ste-lint.mjs",
+          "sha256": "861c23045d58facc00685ecbe937d63770bf87b90b7fd0415ce79a3a0770641a"
+        },
+        {
+          "path": "tests/test_ste_lint.mjs",
+          "sha256": "c2c331d43c558c239192b27026ad192b8bfff322ae4ee442a33967ad1230310e"
+        },
+        {
+          "path": "references/linter.md",
+          "sha256": "99a71c3c54e807ae0b283b6136de7906f7942fe0cd5ecd0b8d77dc9c374edbf0"
+        },
+        {
+          "path": "scripts/run-tests.mjs",
+          "sha256": "c0887ae2284cfc7ff93ff54e5fc3d6c1673d4f399a6d27de19258f8073f5ddfd"
+        },
+        {
+          "path": "scripts/check-install.mjs",
+          "sha256": "dcd6aa7fbc6421c28f700bbf4d76d55e06b97eea947412b053887ff418c9758b"
+        },
+        {
+          "path": "tests/test_case_acceptance.mjs",
+          "sha256": "c5c28b905fbd9deaeba1fc8d00f5a062fe5872b6694dc94de5d19cc1a2747f5e"
+        },
+        {
+          "path": "tests/test_consistency.mjs",
+          "sha256": "ba4a3f4c360e65f72e4e5a86de7cc48a7a550fb318bb665ee4ec4c9ee1776b72"
+        },
+        {
+          "path": "tests/test_evaluate.mjs",
+          "sha256": "89bbe0212b2a8d05e900e02c884f6fe04c66fd9540aaee8220845b2c55e53990"
+        },
+        {
+          "path": "tests/test_adapter_pi.mjs",
+          "sha256": "e8bf1c23ead6d8e21541ec53c1d616c40894a8baec68ded05a8fbeb48bc17fc9"
+        }
+      ],
+      "checks": [
+        {
+          "name": "final125-latest-encoding",
+          "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+          "args": [
+            "scripts/check-install.mjs",
+            "--check-text-files"
+          ],
+          "started_at": "2026-10-11T11:03:42.598Z",
+          "finished_at": "2026-10-11T11:03:43.035Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.23.2",
+          "log_sha256": "0ad636eb09b7e38e0f9b0c850aba34e9eb825ea16cb622e881ca5f3a938a5c3d",
+          "log": "文本文件编码检查通过。\n"
+        },
+        {
+          "name": "final125-minimum-encoding",
+          "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+          "args": [
+            "scripts/check-install.mjs",
+            "--check-text-files"
+          ],
+          "started_at": "2026-10-11T11:03:42.604Z",
+          "finished_at": "2026-10-11T11:03:43.030Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.0.0",
+          "log_sha256": "0ad636eb09b7e38e0f9b0c850aba34e9eb825ea16cb622e881ca5f3a938a5c3d",
+          "log": "文本文件编码检查通过。\n"
+        },
+        {
+          "name": "final125-latest-regression",
+          "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+          "args": [
+            "scripts/run-tests.mjs"
+          ],
+          "started_at": "2026-10-11T11:03:42.610Z",
+          "finished_at": "2026-10-11T11:04:59.385Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.23.2",
+          "log_sha256": "34b9610c303ad3f0c201272f725788221c152cd1f84b2b16b5a738eb87ad1f71",
+          "log": "回归完成：328 项真实测试，328 项通过。\n"
+        },
+        {
+          "name": "final125-minimum-regression",
+          "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+          "args": [
+            "scripts/run-tests.mjs"
+          ],
+          "started_at": "2026-10-11T11:03:42.614Z",
+          "finished_at": "2026-10-11T11:04:55.394Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.0.0",
+          "log_sha256": "34b9610c303ad3f0c201272f725788221c152cd1f84b2b16b5a738eb87ad1f71",
+          "log": "回归完成：328 项真实测试，328 项通过。\n"
+        },
+        {
+          "name": "final125-latest-install",
+          "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+          "args": [
+            "scripts/check-install.mjs"
+          ],
+          "started_at": "2026-10-11T11:03:42.618Z",
+          "finished_at": "2026-10-11T11:04:59.900Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.23.2",
+          "log_sha256": "ee64f8ec829f195249630bfc2399b515a4f9da916542e8fc63618c6a9785a3df",
+          "log": "技能资源、相对 Markdown 链接和临时安装副本检查通过。\n"
+        },
+        {
+          "name": "final125-minimum-install",
+          "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+          "args": [
+            "scripts/check-install.mjs"
+          ],
+          "started_at": "2026-10-11T11:03:42.622Z",
+          "finished_at": "2026-10-11T11:04:56.185Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.0.0",
+          "log_sha256": "ee64f8ec829f195249630bfc2399b515a4f9da916542e8fc63618c6a9785a3df",
+          "log": "技能资源、相对 Markdown 链接和临时安装副本检查通过。\n"
+        },
+        {
+          "name": "final125-latest-selftest",
+          "executable": "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+          "args": [
+            "scripts/ste-lint.mjs",
+            "--selftest"
+          ],
+          "started_at": "2026-10-11T11:03:42.627Z",
+          "finished_at": "2026-10-11T11:04:30.036Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.23.2",
+          "log_sha256": "bf2d11ed4c97dee577916cc1a1c916f6b333bddb897fbc1483c074c87737c327",
+          "log": "回归完成：125 项真实测试，125 项通过。\n自检完成：125 项测试，125 项通过。\n"
+        },
+        {
+          "name": "final125-minimum-selftest",
+          "executable": "/home/zone/.npm/_npx/054abb958ec2ead1/node_modules/node/bin/node",
+          "args": [
+            "scripts/ste-lint.mjs",
+            "--selftest"
+          ],
+          "started_at": "2026-10-11T11:03:42.633Z",
+          "finished_at": "2026-10-11T11:04:29.226Z",
+          "code": 0,
+          "signal": null,
+          "node_version": "v22.0.0",
+          "log_sha256": "bf2d11ed4c97dee577916cc1a1c916f6b333bddb897fbc1483c074c87737c327",
+          "log": "回归完成：125 项真实测试，125 项通过。\n自检完成：125 项测试，125 项通过。\n"
+        }
+      ],
+      "post_document_checks": []
+    }
+  ]
+}

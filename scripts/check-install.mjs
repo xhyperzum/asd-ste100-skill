@@ -16,6 +16,7 @@ export const REQUIRED_PATHS = Object.freeze([
   ['scripts/run-tests.mjs', 'file'],
   ['evals', 'dir'],
   ['evals/cases.json', 'file'],
+  ['evals/adapter-pi-example.mjs', 'file'],
   ['references', 'dir'],
   ['references/linter.md', 'file'],
   ['references/evaluation.md', 'file'],
@@ -28,6 +29,7 @@ export const REQUIRED_PATHS = Object.freeze([
   ['tests', 'dir'],
   ['tests/test_install.mjs', 'file'],
   ['tests/test_evaluate.mjs', 'file'],
+  ['tests/test_adapter_pi.mjs', 'file'],
   ['tests/test_ste_lint.mjs', 'file'],
   ['tests/test_run_tests.mjs', 'file'],
   ['tests/test_consistency.mjs', 'file'],
@@ -39,11 +41,26 @@ const CACHE_NAMES = new Set(['.git', '.omc', 'graft', 'node_modules', '__pycache
 const CODE_FENCE = /^ {0,3}(?<marker>`{3,}|~{3,})(?<tail>.*)$/u;
 const CHECKER_PATH = realpathSync(fileURLToPath(import.meta.url));
 const ROOT_PATH = path.dirname(path.dirname(CHECKER_PATH));
+const RESOURCE_WORK_LIMIT = 10_000;
+const MARKDOWN_WORK_LIMIT = 1_048_576;
+
+function resourceWorkBudget() {
+  let remaining = RESOURCE_WORK_LIMIT;
+  return resource => {
+    if (--remaining < 0) {
+      const error = new Error(`资源遍历超过累计工作预算（${RESOURCE_WORK_LIMIT} 项）：${resource}`);
+      error.code = 'RESOURCE_WORK_LIMIT';
+      throw error;
+    }
+  };
+}
 
 function listFiles(root, errors) {
   const files = [];
   const boundary = realpathSync(root);
+  const spend = resourceWorkBudget();
   function visit(directory, ancestors = new Set()) {
+    spend(relative(root, directory));
     let actual;
     try { actual = realpathSync(directory); }
     catch { errors.push(`${relative(root, directory)}: 无法解析资源链接`); return; }
@@ -53,6 +70,7 @@ function listFiles(root, errors) {
     for (const entry of readdirSync(directory, { withFileTypes: true })) {
       if (CACHE_NAMES.has(entry.name)) continue;
       const absolute = path.join(directory, entry.name);
+      spend(relative(root, absolute));
       let target;
       try {
         const realTarget = realpathSync(absolute);
@@ -63,7 +81,11 @@ function listFiles(root, errors) {
       else if (target.isFile()) files.push(absolute);
     }
   }
-  visit(root);
+  try { visit(root); }
+  catch (error) {
+    if (error.code !== 'RESOURCE_WORK_LIMIT') throw error;
+    errors.push(error.message);
+  }
   return files;
 }
 
@@ -153,7 +175,8 @@ function markdownTarget(raw) {
   return value.split(/\s/u, 1)[0].replace(/\\([!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~])/gu, '$1');
 }
 
-function bracketEnd(text, start, opening, closing) {
+function bracketEnd(text, start, opening, closing, spend) {
+  spend(text.length - start - 1);
   let depth = 1;
   let angle = false;
   let quote = null;
@@ -174,31 +197,58 @@ function bracketEnd(text, start, opening, closing) {
 }
 
 function markdownTargets(text) {
+  let remaining = MARKDOWN_WORK_LIMIT;
+  const spend = length => {
+    if (length > remaining) {
+      const error = new Error(`Markdown 扫描超过累计工作预算（${MARKDOWN_WORK_LIMIT} 单位）`);
+      error.code = 'MARKDOWN_WORK_LIMIT';
+      throw error;
+    }
+    remaining -= length;
+  };
+  spend(text.length);
   const targets = [];
   const references = new Map();
-  const normalize = label => label.trim().replace(/\s+/gu, ' ').toLowerCase();
+  const normalize = label => {
+    spend(label.length);
+    return label.trim().replace(/\s+/gu, ' ').toLowerCase();
+  };
   const prose = proseWithoutCode(text).replace(/^ {0,3}\[([^\]\n]+)\]:[ \t]*(.+)$/gmu, (_line, label, value) => {
     const key = normalize(label);
     if (!references.has(key)) {
       references.set(key, value);
+      spend(value.length);
       targets.push(markdownTarget(value));
     }
     return '';
   });
+  spend(prose.length * 2);
+  const brackets = new Map();
+  const openings = [];
+  for (let index = 0; index < prose.length; index += 1) {
+    if (prose[index] === '\\') { index += 1; continue; }
+    if (prose[index] === '[') openings.push(index);
+    else if (prose[index] === ']' && openings.length) brackets.set(openings.pop(), index);
+  }
   for (let index = 0; index < prose.length; index += 1) {
     if (prose[index] === '\\') { index += 1; continue; }
     if (prose[index] !== '[') continue;
-    const end = bracketEnd(prose, index, '[', ']');
-    if (end < 0) continue;
+    const end = brackets.get(index);
+    if (end === undefined) continue;
+    spend(end - index - 1);
     const label = prose.slice(index + 1, end);
     let next = end + 1;
-    while (/[ \t\n]/u.test(prose[next] || '') && next < prose.length) next += 1;
+    while (/[ \t\n]/u.test(prose[next] || '') && next < prose.length) { spend(1); next += 1; }
     if (prose[next] === '(') {
-      const close = bracketEnd(prose, next, '(', ')');
-      if (close >= 0) { targets.push(markdownTarget(prose.slice(next + 1, close))); index = close; }
-    } else if (prose[next] === '[') {
-      const close = bracketEnd(prose, next, '[', ']');
+      const close = bracketEnd(prose, next, '(', ')', spend);
       if (close >= 0) {
+        spend(close - next - 1);
+        targets.push(markdownTarget(prose.slice(next + 1, close)));
+        index = close;
+      }
+    } else if (prose[next] === '[') {
+      const close = brackets.get(next);
+      if (close !== undefined) {
         // 定义的目标已统一检查；未定义的引用按 Markdown 正文处理。
         index = close;
       }
@@ -220,7 +270,14 @@ export function checkMarkdownLinks(root) {
       errors.push(`${name}: 无法读取 UTF-8 文档：${error.message}`);
       continue;
     }
-    for (const rawTarget of markdownTargets(text)) {
+    let targets;
+    try { targets = markdownTargets(text); }
+    catch (error) {
+      if (error.code !== 'MARKDOWN_WORK_LIMIT') throw error;
+      errors.push(`${name}: ${error.message}`);
+      continue;
+    }
+    for (const rawTarget of targets) {
       let target = rawTarget;
       if (!target || /^(?:[a-z][a-z\d+.-]*:|\/\/|#)/iu.test(target)) continue;
       target = target.split(/[?#]/u, 1)[0];
@@ -302,7 +359,8 @@ export async function run(command, cwd, inputText = null, timeoutSec = 120) {
   });
 }
 
-function copyTree(source, destination, sourceRoot, ancestors = new Set()) {
+function copyTree(source, destination, sourceRoot, spend, ancestors = new Set()) {
+  spend(relative(sourceRoot, source));
   const realSource = realpathSync(source);
   if (!pathInside(sourceRoot, realSource)) throw new Error(`运行资源越出技能目录：${source}`);
   if (ancestors.has(realSource)) throw new Error(`运行资源包含循环目录链接：${source}`);
@@ -313,29 +371,32 @@ function copyTree(source, destination, sourceRoot, ancestors = new Set()) {
     if (CACHE_NAMES.has(entry.name)) continue;
     const from = path.join(source, entry.name);
     const to = path.join(destination, entry.name);
-    if (entry.isDirectory()) copyTree(from, to, sourceRoot, nextAncestors);
+    spend(relative(sourceRoot, from));
+    if (entry.isDirectory()) copyTree(from, to, sourceRoot, spend, nextAncestors);
     else if (entry.isFile()) copyFileSync(from, to);
     else if (entry.isSymbolicLink()) {
       const actual = realpathSync(from);
       if (!pathInside(sourceRoot, actual)) throw new Error(`运行资源链接越出技能目录：${relative(sourceRoot, from)}`);
       const targetStat = statSync(actual);
-      if (targetStat.isDirectory()) copyTree(actual, to, sourceRoot, nextAncestors);
+      if (targetStat.isDirectory()) copyTree(actual, to, sourceRoot, spend, nextAncestors);
       else if (targetStat.isFile()) copyFileSync(actual, to);
     }
   }
 }
 
-function copySkillResources(source, destination) {
+export function copySkillResources(source, destination) {
+  const spend = resourceWorkBudget();
   mkdirSync(destination, { recursive: true });
   for (const name of ['SKILL.md', 'README.md', 'LICENSE', 'LICENSE.zh-CN']) {
     const from = path.join(source, name);
     if (existsSync(from)) {
+      spend(name);
       if (!pathInside(source, realpathSync(from))) throw new Error(`运行资源越出技能目录：${name}`);
       copyFileSync(from, path.join(destination, name));
     }
   }
   for (const name of ['scripts', 'evals', 'references', 'tests', 'examples']) {
-    copyTree(path.join(source, name), path.join(destination, name), source);
+    copyTree(path.join(source, name), path.join(destination, name), source, spend);
   }
 }
 

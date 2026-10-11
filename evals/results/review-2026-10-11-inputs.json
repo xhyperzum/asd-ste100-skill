@@ -1,0 +1,109 @@
+{
+  "before": {
+    "captured_at": "2026-10-11T06:49:53.071Z",
+    "phase": "最终完整真实模型运行开始前",
+    "model": "wokey/claude-opus-5-5",
+    "pi_version": "1.1.0",
+    "node_version": "v22.23.2",
+    "adapter_system_prompt": "按照用户消息处理请求。",
+    "sampling": {
+      "temperature": "未显式设置，使用CLI/provider默认值",
+      "seed": "未显式设置"
+    },
+    "files": [
+      {
+        "path": "SKILL.md",
+        "sha256": "2e0d39e8fbc9d8c55d1fbf0cb57426ab7fd2054a62c5a34cf4960f3156a14093"
+      },
+      {
+        "path": "references/chinese-writing-rules.md",
+        "sha256": "4623c20ee6379a49e6f7e979b24ee8753c0e4c3c3d82cf18b3680e2a475262b0"
+      },
+      {
+        "path": "evals/cases.json",
+        "sha256": "25d09afbaa908d74509735c90645fecc72cbb4500fb4b5a3e44f169f87c75579"
+      },
+      {
+        "path": "scripts/evaluate.mjs",
+        "sha256": "0459fded70d0885119bbcc68ba678a54010219d1390d318452ac619140ea88cf"
+      },
+      {
+        "path": "evals/adapter-pi-example.mjs",
+        "sha256": "c9d10db7e7ef9ed2b7b979c87a862bec5d5d160ee32c52788649d2c9c80ab9f1"
+      }
+    ]
+  },
+  "after": {
+    "captured_at": "2026-10-11T06:56:56.336Z",
+    "files": [
+      {
+        "path": "SKILL.md",
+        "sha256": "2e0d39e8fbc9d8c55d1fbf0cb57426ab7fd2054a62c5a34cf4960f3156a14093",
+        "after_sha256": "2e0d39e8fbc9d8c55d1fbf0cb57426ab7fd2054a62c5a34cf4960f3156a14093",
+        "unchanged": true
+      },
+      {
+        "path": "references/chinese-writing-rules.md",
+        "sha256": "4623c20ee6379a49e6f7e979b24ee8753c0e4c3c3d82cf18b3680e2a475262b0",
+        "after_sha256": "4623c20ee6379a49e6f7e979b24ee8753c0e4c3c3d82cf18b3680e2a475262b0",
+        "unchanged": true
+      },
+      {
+        "path": "evals/cases.json",
+        "sha256": "25d09afbaa908d74509735c90645fecc72cbb4500fb4b5a3e44f169f87c75579",
+        "after_sha256": "25d09afbaa908d74509735c90645fecc72cbb4500fb4b5a3e44f169f87c75579",
+        "unchanged": true
+      },
+      {
+        "path": "scripts/evaluate.mjs",
+        "sha256": "0459fded70d0885119bbcc68ba678a54010219d1390d318452ac619140ea88cf",
+        "after_sha256": "0459fded70d0885119bbcc68ba678a54010219d1390d318452ac619140ea88cf",
+        "unchanged": true
+      },
+      {
+        "path": "evals/adapter-pi-example.mjs",
+        "sha256": "c9d10db7e7ef9ed2b7b979c87a862bec5d5d160ee32c52788649d2c9c80ab9f1",
+        "after_sha256": "c9d10db7e7ef9ed2b7b979c87a862bec5d5d160ee32c52788649d2c9c80ab9f1",
+        "unchanged": true
+      }
+    ]
+  },
+  "actual_run": {
+    "report": "evals/results/real-model-2026-10-11-reviewed.json",
+    "report_sha256": "5c5c8fdb0f753804bdf781fa4b50ebf65e52a7c67204cf851b6492efb6c394b3",
+    "execution": {
+      "label": "最终评审维度41例",
+      "args": [
+        "PATH=/home/zone/.local/bin:/usr/local/bin:/usr/bin:/bin",
+        "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+        "scripts/evaluate.mjs",
+        "--model",
+        "wokey/claude-opus-5-5",
+        "--output",
+        "/home/workspace/github/asd-ste100-skill/evals/results/real-model-2026-10-11-reviewed.json",
+        "--timeout",
+        "120",
+        "--command",
+        "/home/zone/.nvm/versions/node/v22.23.2/bin/node",
+        "evals/adapter-pi-example.mjs",
+        "wokey/claude-opus-5-5"
+      ],
+      "started": "2026-10-11T06:49:53.080Z",
+      "done": true,
+      "stdout": "已保存 41 个案例的实际输出：/home/workspace/github/asd-ste100-skill/evals/results/real-model-2026-10-11-reviewed.json；自动评估未通过 0 项，操作失败 0 项。\n语义维度仍需逐案人工复核；自动约束通过不代表技能行为已验证。\n",
+      "stderr": "",
+      "pid": 399115,
+      "code": 0,
+      "signal": null,
+      "ended": "2026-10-11T06:54:53.143Z"
+    }
+  },
+  "verification": {
+    "cases": 41,
+    "errors": [],
+    "semantic_approval": "pending-human-review",
+    "pending": 41
+  },
+  "semantic_approval": "pending-human-review",
+  "note": "真实运行不是导入。命令不记录认证环境或凭据；默认采样参数不保证逐字复现。"
+}

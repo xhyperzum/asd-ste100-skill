@@ -12,11 +12,19 @@
 | 模型行为评测器 | `scripts/evaluate.mjs` | `scripts/evaluate.py` |
 | 安装校验器 | `scripts/check-install.mjs` | `scripts/check-install.py` |
 
-对应回归测试为 `tests/test_ste_lint.mjs`、`tests/test_evaluate.mjs` 和 `tests/test_install.mjs`，替代同名 `.py` 测试；`tests/test_run_tests.mjs` 验证共享 runner，`tests/test_consistency.mjs` 验证跨文件一致性（规则表、版本号、覆盖表、必需资源清单）。`scripts/run-tests.mjs` 自动排序发现 `tests/test_*.mjs`，新增测试不需要另改 CI 或安装脚本中的文件清单；但 `tests/` 下只允许顶层 `test_*.mjs`，子目录、其他 `.js` 或命名不符的 `.mjs` 会被拒绝，而不是静默忽略。历史模型评测文件保留原始调用记录和哈希，不将它们改写为新入口或新版技能的运行结果。
+对应回归测试为 `tests/test_ste_lint.mjs`、`tests/test_evaluate.mjs` 和 `tests/test_install.mjs`，替代同名 `.py` 测试；`tests/test_run_tests.mjs` 验证共享 runner，`tests/test_consistency.mjs` 验证跨文件一致性（规则表、版本号、覆盖表、必需资源清单）。`scripts/run-tests.mjs` 自动排序发现 `tests/test_*.mjs`，runner 与 CI 自动发现新增测试，无需逐个修改 CI，但必须将新增测试登记到 `scripts/check-install.mjs` 的 `REQUIRED_PATHS` 必需资源清单。 `tests/` 下只允许顶层 `test_*.mjs`，子目录、其他 `.js` 或命名不符的 `.mjs` 会被拒绝，而不是静默忽略。历史模型评测文件保留原始调用记录和哈希，不将它们改写为新入口或新版技能的运行结果。
 
 安装校验器会验证必需资源的文件或目录类型、相对 Markdown 链接，以及文本的 UTF-8、无 BOM 和 LF 格式。编码检查涵盖 `.mjs`、Markdown、JSON 与 YAML，包括 `.github/workflows/` 下的 CI 配置；运行缓存和 Git 元数据不参与检查。内部 symlink 的实际内容也检查；外部、断开或循环链接会被拒绝。
 
+每次文本扫描、Markdown 链接扫描和整次运行资源复制各有独立的累计工作预算：最多 10000 项。每次进入目录及处理一个非缓存目录项各计一项；复制顶层文件也计一项。共享内部 symlink 的每条别名路径分别计数并检查，不按真实路径静默去重，保留别名目录中的相对链接语义。超过预算立即停止遍历，并以中文预算错误拒绝检查或复制；不把已扫描部分视为全部通过。临时安装验证失败时会清理副本。该预算限制展开工作量，不是单文件字节数或总复制字节数限制。
+
 Markdown 资源检查支持行内链接和图片、平衡括号与反斜杠转义目的地、`<含空格目标>`，以及同一物理行的 reference definitions。代码区域、外部 URL 和页内 anchor 跳过。它仍是有限子集：不解析 HTML 块、复杂引用块或列表内围栏、跨行 reference definitions；未定义的 reference 按 Markdown 正文处理，不能据此宣称验证了完整 Markdown。
+
+正文方括号一次配对后复用结果，未闭合外层括号不会触发逐字符重复扫描后缀，也不会遮蔽内部已闭合链接。此处仅保证方括号配对为线性扫描，不宣称完整 Markdown 检查的所有阶段都有线性复杂度。
+
+每份 Markdown 文档另有 1048576 单位的累计扫描工作预算，以 JavaScript 字符串的 UTF-16 长度计量：原文预处理计原文长度，正文方括号配对及链接遍历各预计正文长度；每次复制标签、规范化标签、提取行内目的地或解析 reference definition 的目的地，在操作前分别计对应片段长度；链接后的空白扫描每步计一单位。每次 `bracketEnd` 在扫描前按起始括号后整个剩余后缀长度预计，提前闭合不退还额度。这是保守工作额度，不是文件字节上限，也不是耗时阈值。累计工作恰等预算可通过，超出即报告带文档路径的中文预算错误，完整安装验证必须拒绝，不能将部分链接检查视为通过。
+
+预算内仍支持上述嵌套、转义和目的地语义；大量正常短链接也可能因保守后缀计量而被拒绝，需拆分文档。预算限制重复后缀扫描和重叠标签处理，不承诺预处理及其他正则表达式全部具有线性复杂度。
 
 ## 验证
 
